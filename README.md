@@ -9,7 +9,7 @@
 * `Coord` holds x,y,z coordinates of a point in space.
 * `Node` holds a coord, a NodeList of connected nodes, and a weight.
 * `NodeList` holds a vector of Nodes.
-* `Cell` holds a vector of Nodes. Cells are used to group nodes together by their location (nodes constrained by the square (0,0)(0,1)(1,0)(1,1) will be in cell[0][0][0])
+* `Cell` holds a vector of Nodes. Cells are used to group nodes together by their location (nodes constrained by the square (0,0)(0,1)(1,0)(1,1) will be in cell[0][0])
 
 ## Functions in Graph
 * `Graph(Coord* startCoord)` 
