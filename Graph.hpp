@@ -2,9 +2,12 @@
 #define GRAPH_H
 
 #include <stdlib.h>
+#include <iostream>
 #include <vector>
 
-struct Coord {  //For 2d coordinatses, z=-1
+#include "Constants.hpp"
+
+struct Coord {  //For 2d coordinates, z=-1
     float x, y ,z;
 };
 
@@ -15,21 +18,25 @@ struct Node {
 };
 
 struct NodeList {
-    std::vector<Node> list;
+    std::vector<Node*> list;
 }; 
 
-
-
+struct Cell {
+    std::vector<Node*> containedNodes;
+};
 
 
 class Graph {   
-    int numNodes; 
-    struct NodeList* adjList; 
+    public:
+        Graph(Coord* startCoord);
+        void addEdge(Node* startNode, Node* endNode, float weight);
+        Coord* getCellCoords(Node* node);
 
-public:
-    Graph();
-    void addEdge(int u, int v, float w);
-
+    private:
+        int numNodes; 
+        std::vector<NodeList*> adjList;
+        //3d vector of cells below
+        Cell* cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
 }; 
 
 
