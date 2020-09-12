@@ -1,6 +1,6 @@
 # RRT-Star
 
-##Makefile commands:
+## Makefile commands:
 * make Graph
 ** compiles the Graph file
 
