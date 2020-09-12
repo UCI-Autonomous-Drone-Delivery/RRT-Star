@@ -2,7 +2,7 @@
 
 ## Makefile commands:
 * make Graph
-** compiles the Graph file
+  * compiles the Graph file
 
 * make clean
-** removes all .o files and .exe
+  * removes all .o files and .exe
