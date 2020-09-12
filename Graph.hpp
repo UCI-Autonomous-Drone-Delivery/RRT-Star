@@ -1,43 +1,86 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef GRAPH_HPP
+#define GRAPH_HPP
 
 #include <stdlib.h>
-#include <iostream>
 #include <vector>
 
-#include "Constants.hpp"
-
-struct Coord {  //For 2d coordinates, z=-1
+struct Coord {  //For 2d coordinatses, z=-1
     float x, y ,z;
+
+    Coord()
+    {
+        x = rand() % 100;
+        y = rand() % 100;
+        z = rand() % 100;
+    }
+
+    Coord(float x_new, float y_new, float z_new)
+    {
+        x = x_new;
+        y = y_new;
+        z = z_new;
+    }
 };
+
+//struct Cell {
+//    std::vector<Node> contained_nodes;
+//};
 
 struct Node {
-    Coord* coord;
-    struct NodeList* connectedNodes;
+    int node_number;
+    std::vector<Node> node_list;
     float weight;
+    Coord coord;
+    Coord cell_coord;
+    
+    Node() // Base Constructor
+    {
+        node_number = 0;
+        // Temp random coord
+        Coord new_coord;
+        new_coord.x = rand() % 100;
+        new_coord.y = rand() % 100;
+        new_coord.z = rand() % 100;
+
+        // Temp Values
+        Coord new_cell_coord;
+        new_cell_coord.x = 5;
+        new_cell_coord.y = 10;
+        new_cell_coord.z = 15;
+
+        coord = new_coord;
+        cell_coord = new_cell_coord;
+        weight = 200; // Temp value
+    }
+
+    Node(int node_num, Coord new_coord) // Constructor for every other new point
+    {
+        node_number = node_num;
+
+        // Temp Values
+        Coord new_cell_coord;
+        //new_cell_coord.x = 5;
+        //new_cell_coord.y = 10;
+        //new_cell_coord.z = 15;
+
+        coord = new_coord;
+        cell_coord = new_cell_coord;
+    }
 };
-
-struct NodeList {
-    std::vector<Node*> list;
-}; 
-
-//Can we just replace cells with NodeList??
-struct Cell {
-    std::vector<Node*> containedNodes;
-};
-
 
 class Graph {   
-    public:
-        Graph(Coord* startCoord);
-        void addEdge(Node* startNode, Node* endNode, float weight);
-        Coord* getCellCoords(Node* node);
+    int num_nodes; 
+    
 
-    private:
-        int numNodes; 
-        std::vector<Node*> adjList;
-        //3d vector of cells below
-        Cell* cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+public:
+    Graph(int total_nodes);
+    std::vector < Node > adj_list;
+    void addEdge(int u, int v, float w);
+    float findDistance(Coord coord_src, Coord coord_dest);
+    Node nearestNode(Coord random_coord);
+    Coord stepNode(Coord coord, float step_size);
+    void addEdge(Node node_src, Node node_dest, float weight);
+    void printGraph();
 }; 
 
 
