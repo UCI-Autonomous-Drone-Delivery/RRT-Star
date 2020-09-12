@@ -1,56 +1,44 @@
-#include "Graph.hpp"
+#ifndef GRAPH_H
+#define GRAPH_H
 
-Graph::Graph(Coord* startCoord) {
-    //create array of cells
-    for(int i=0;i<NUMCELLSX;i++) {
-        for(int j=0;j<NUMCELLSY;j++) {
-            for(int k=0;k<NUMCELLSZ;k++) {
-                //create cell and store in cells[i][j][k]
-                struct Cell* newCell=new Cell;
-                cells[i][j][k]=newCell;
-    
-            }
-        }
-    }
+#include <stdlib.h>
+#include <iostream>
+#include <vector>
 
-    //create the first node
-    struct Node* firstNode=new Node;
-    firstNode->coord=startCoord;
-    firstNode->weight=0;
+#include "Constants.hpp"
 
-    //figure out which cell the node belongs to and add it to the cell
-    Coord* cellCoord = getCellCoords(firstNode);
-    cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z]->containedNodes.push_back(firstNode);
+struct Coord {  //For 2d coordinates, z=-1
+    float x, y ,z;
+};
 
-    //add node to a nodeList, and add the nodeList to the Graph's Adjacency list
-    adjList.push_back(firstNode);
-    std::cout<<adjList.at(0)->coord->z;
-}
+struct Node {
+    Coord* coord;
+    struct NodeList* connectedNodes;
+    float weight;
+};
 
-Coord* Graph::getCellCoords(Node* node) {
-    Coord* cellCoord=new Coord;
-    cellCoord->x=(int)node->coord->x/CELLSIZE;
-    cellCoord->y=(int)node->coord->y/CELLSIZE;
-    cellCoord->z=(int)node->coord->z/CELLSIZE;
+struct NodeList {
+    std::vector<Node*> list;
+}; 
 
-    return cellCoord;
-}
-
-void Graph::addEdge(Node* startNode, Node* endNode, float weight) {
-    //using findNeighbors function will speed up the part where you check if the node exists
+//Can we just replace cells with NodeList??
+struct Cell {
+    std::vector<Node*> containedNodes;
+};
 
 
-    //Check if startNode and endNode already exist
-    //add them to the adjacency list if they don't exist
-    //add endNode to startNode's connectedNodes list (and maybe startNode to endNode's if we want undirected?).
-}
+class Graph {   
+    public:
+        Graph(Coord* startCoord);
+        void addEdge(Node* startNode, Node* endNode, float weight);
+        Coord* getCellCoords(Node* node);
 
-int main() {
-    struct Coord* c=new Coord;
-    c->x=15;
-    c->y=21;
-    c->z=20;
+    private:
+        int numNodes; 
+        std::vector<Node*> adjList;
+        //3d vector of cells below
+        Cell* cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+}; 
 
 
-    Graph* g=new Graph(c);
-}
+#endif
