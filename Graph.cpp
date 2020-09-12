@@ -23,9 +23,8 @@ Graph::Graph(Coord* startCoord) {
 	cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z]->containedNodes.push_back(firstNode);
 
 	//add node to a nodeList, and add the nodeList to the Graph's Adjacency list
-	struct NodeList* nodeList=new NodeList;
-	nodeList->list.push_back(firstNode);
-	adjList.push_back(nodeList);
+	adjList.push_back(firstNode);
+	std::cout<<adjList.at(0)->coord->z;
 }
 
 Coord* Graph::getCellCoords(Node* node) {
@@ -43,7 +42,7 @@ void Graph::addEdge(Node* startNode, Node* endNode, float weight) {
 
 	//Check if startNode and endNode already exist
 	//add them to the adjacency list if they don't exist
-	//add endNode to startNode's connectedNodes list.
+	//add endNode to startNode's connectedNodes list (and maybe startNode to endNode's if we want undirected?).
 }
 
 int main() {

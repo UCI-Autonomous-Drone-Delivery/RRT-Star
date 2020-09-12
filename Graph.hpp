@@ -21,6 +21,7 @@ struct NodeList {
     std::vector<Node*> list;
 }; 
 
+//Can we just replace cells with NodeList??
 struct Cell {
     std::vector<Node*> containedNodes;
 };
@@ -34,7 +35,7 @@ class Graph {
 
     private:
         int numNodes; 
-        std::vector<NodeList*> adjList;
+        std::vector<Node*> adjList;
         //3d vector of cells below
         Cell* cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
 }; 
