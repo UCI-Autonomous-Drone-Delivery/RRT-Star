@@ -13,10 +13,12 @@
 
 ## Functions in Graph
 * `Graph(Coord* startCoord)` 
- -- This is the class Constructor. It takes in a starting coordinate as it's only parameter. It stores this in a node, and then stores the node in the graph's Adjacency List, as well as in the appropriate cell.
+	- This is the class Constructor. It takes in a starting coordinate as it's only parameter. It stores this in a node, and then stores the node in the graph's Adjacency List, as well as in the appropriate cell.
 * `void addEdge(Node* startNode, Node* endNode, float weight)`
- -- This adds a new connection between nodes. First, it checks if the nodes already exist. If they don't it adds them to the adjacency list. Next, it adds endNode to the list of connected nodes in startNode.
+	- This adds a new connection between nodes. First, it checks if the nodes already exist. If they don't it adds them to the adjacency list. Next, it adds endNode to the list of connected nodes in startNode.
 * `findNeighbors()`
+ 
+ 
  
  
 ## Functions in RRT_Star
