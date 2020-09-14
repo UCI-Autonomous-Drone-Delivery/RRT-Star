@@ -3,6 +3,11 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <time.h>
+#include <cmath>
+#include <iostream>
+
+#include "Constants.hpp"
 
 struct Coord {  //For 2d coordinatses, z=-1
     float x, y ,z;
@@ -28,37 +33,37 @@ struct Coord {  //For 2d coordinatses, z=-1
 
 struct Node {
     int node_number;
-    std::vector<Node> node_list;
+    std::vector<Node*> connectedNodes;  //previously node_list
     float weight;
-    Coord coord;
-    Coord cell_coord;
+    Coord* coord;
+    Coord* cell_coord;
     
     Node() // Base Constructor
     {
         node_number = 0;
         // Temp random coord
-        Coord new_coord;
-        new_coord.x = rand() % 100;
-        new_coord.y = rand() % 100;
-        new_coord.z = rand() % 100;
+        Coord* new_coord;
+        new_coord->x = ((float) rand()) / (float) MAPSIZE;
+        new_coord->y = ((float) rand()) / (float) MAPSIZE;
+        new_coord->z = ((float) rand()) / (float) MAPSIZE;
 
         // Temp Values
-        Coord new_cell_coord;
-        new_cell_coord.x = 5;
-        new_cell_coord.y = 10;
-        new_cell_coord.z = 15;
+        Coord* new_cell_coord;
+        new_cell_coord->x = 5;
+        new_cell_coord->y = 10;
+        new_cell_coord->z = 15;
 
         coord = new_coord;
         cell_coord = new_cell_coord;
         weight = 200; // Temp value
     }
 
-    Node(int node_num, Coord new_coord) // Constructor for every other new point
+    Node(int node_num, Coord* new_coord) // Constructor for every other new point
     {
         node_number = node_num;
 
         // Temp Values
-        Coord new_cell_coord;
+        Coord* new_cell_coord;
         //new_cell_coord.x = 5;
         //new_cell_coord.y = 10;
         //new_cell_coord.z = 15;
@@ -73,14 +78,22 @@ class Graph {
     
 
 public:
-    Graph(int total_nodes);
-    std::vector < Node > adj_list;
+    Graph(int total_nodes, Coord* coord);
+    Coord* getCellCoords(Node* node);
+    std::vector<Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+    std::vector <Node*> adj_list;
     void addEdge(int u, int v, float w);
-    float findDistance(Coord coord_src, Coord coord_dest);
-    Node nearestNode(Coord random_coord);
-    Coord stepNode(Coord coord, float step_size);
-    void addEdge(Node node_src, Node node_dest, float weight);
+    float findDistance(Coord* coord_src, Coord* coord_dest);
+    Node* nearestNode(Coord* random_coord);
+    Coord* stepNode(Coord* coord, float step_size);
+    void addNode(Node* node);
+    void addEdge(Node* node_src, Node* node_dest, float weight);
+
+
+    //Debugging Functions
+    void printCellPop();
     void printGraph();
+    void printNode(Node* node);
 }; 
 
 
