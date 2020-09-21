@@ -14,9 +14,9 @@ struct Coord {  //For 2d coordinatses, z=-1
 
     Coord()
     {
-        x = rand() % 100;
-        y = rand() % 100;
-        z = rand() % 100;
+        x = rand() % MAPSIZE;
+        y = rand() % MAPSIZE;
+        z = rand() % MAPSIZE;
     }
 
     Coord(float x_new, float y_new, float z_new)
@@ -47,45 +47,30 @@ struct Node {
         new_coord->y = ((float) rand()) / (float) MAPSIZE;
         new_coord->z = ((float) rand()) / (float) MAPSIZE;
 
-        // Temp Values
-        Coord* new_cell_coord;
-        new_cell_coord->x = 5;
-        new_cell_coord->y = 10;
-        new_cell_coord->z = 15;
-
         coord = new_coord;
-        cell_coord = new_cell_coord;
-        weight = 200; // Temp value
+        weight = 0; // Temp value
     }
 
     Node(int node_num, Coord* new_coord) // Constructor for every other new point
     {
         node_number = node_num;
-
-        // Temp Values
-        Coord* new_cell_coord;
-        //new_cell_coord.x = 5;
-        //new_cell_coord.y = 10;
-        //new_cell_coord.z = 15;
-
         coord = new_coord;
-        cell_coord = new_cell_coord;
     }
 };
 
 class Graph {   
     int num_nodes; 
+    std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+    std::vector <Node*> adj_list;
     
 
 public:
     Graph(int total_nodes, Coord* coord);
     Coord* getCellCoords(Node* node);
-    std::vector<Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
-    std::vector <Node*> adj_list;
-    void addEdge(int u, int v, float w);
-    float findDistance(Coord* coord_src, Coord* coord_dest);
+    Coord* stepNode(Coord* coord, Coord* random_coord, float step_size);
     Node* nearestNode(Coord* random_coord);
-    Coord* stepNode(Coord* coord, float step_size);
+    bool checkObstacle(Coord* coord_src, Coord* coord_dest);
+    float findDistance(Coord* coord_src, Coord* coord_dest);
     void addNode(Node* node);
     void addEdge(Node* node_src, Node* node_dest, float weight);
 

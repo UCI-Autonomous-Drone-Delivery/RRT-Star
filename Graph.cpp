@@ -71,7 +71,7 @@ Node* Graph::nearestNode(Coord* random_coord)
 }
 
 // Creates a new coordinate step size away from the selected Node
-Coord* Graph::stepNode(Coord* coord, float step_size) 
+Coord* Graph::stepNode(Coord* coord, Coord* random_coord, float step_size) 
 {
 	//Need to handle case when coord+step_size is greater than random point
 	float x_new, y_new, z_new, hypotonouse;
@@ -79,6 +79,12 @@ Coord* Graph::stepNode(Coord* coord, float step_size)
 	hypotonouse = ((step_size)*sqrt(2.0f)) / 2.0f;
 	x_new = ((hypotonouse)*sqrt(2.0f)) / 2.0f;
 	y_new = ((hypotonouse)*sqrt(2.0f)) / 2.0f;
+
+
+	// Checks if random coordinate is at a location less than the nearest coordinate
+	if (random_coord->x < coord->x) { x_new = -x_new; }
+	if (random_coord->y < coord->y) { y_new = -y_new; }
+	if (random_coord->z < coord->z) { z_new = -z_new; }
 
 	Coord* newCoord = new Coord(coord->x + x_new, coord->y + y_new, coord->z + z_new);
 
@@ -95,6 +101,34 @@ void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 
 }
 
+void Graph::addNode(Node* node) {
+	adj_list.push_back(node);		//add new node to adj list
+
+	//get cell coordinates, add cell coords to node and add node to the appropriate cell
+	Coord* cellCoord=getCellCoords(node);
+	node->cell_coord=cellCoord;
+
+	printNode(node);
+
+	cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
+
+	
+}
+
+bool Graph::checkObstacle(Coord* coord_src, Coord* coord_dest) {
+
+	// Check if coordinate is outside boundaries
+	// This is very basic right now
+	if (coord_dest->x >= MAPSIZE || coord_dest->y >= MAPSIZE || coord_dest->z >= MAPSIZE) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+// Debug Functions
+
 void Graph::printGraph()
 {
 	cout << "Size of Graph vector: " << adj_list.size() << endl;
@@ -109,9 +143,9 @@ void Graph::printGraph()
 }
 
 void Graph::printCellPop() {
-	for(int i=0;i<NUMCELLSX;i++) {
-		for(int j=0;j<NUMCELLSY;j++) {
-			for(int k=0;k<NUMCELLSZ;k++) {
+	for (int i = 0; i < NUMCELLSX; i++) {
+		for (int j = 0; j < NUMCELLSY; j++) {
+			for (int k = 0; k < NUMCELLSZ; k++) {
 				cout << "cell[" << i << "][" << j << "][" << k << "] population = " << cells[i][j][k].size() << "\n";
 
 			}
@@ -119,23 +153,15 @@ void Graph::printCellPop() {
 	}
 }
 
-void Graph::addNode(Node* node) {
-	adj_list.push_back(node);		//add new node to adj list
-
-	//get cell coordinates, add cell coords to node and add node to the appropriate cell
-	Coord* cellCoord=getCellCoords(node);
-	node->cell_coord=cellCoord;
-	cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
-
-	printNode(node);
-}
-
 void Graph::printNode(Node* node) {
-	cout<< "(X,Y,Z) = (" << node->coord->x << "," << node->coord->y << "," << node->coord->z<< ")\n";
+	cout << "Node: " << node->node_number << endl;
+	cout << "Coord(X,Y,Z) = (" << node->coord->x << "," << node->coord->y << "," << node->coord->z << ")\n";
+	cout << "Cell (X,Y,Z) = (" << node->cell_coord->x << "," << node->cell_coord->y << "," << node->cell_coord->z << ")\n" << endl;
 }
 
+// End Debug Functions
 
-int main() {
+void rrtStar() { // Right now its RRT
 	
 	srand(time(NULL));
 	//Random starting point initialized to 0,10,29 for now
@@ -146,25 +172,31 @@ int main() {
 	while (i <= NUMNODES) {
 		Coord* random_coord = new Coord();	// Random Position
 		Node* nearest_node = graph.nearestNode(random_coord); // Nearest Node from the random point
-		Node* new_node =new Node(i, graph.stepNode(nearest_node->coord, STEPSIZE)); // Create a new node step size away from the nearest node towards the random point
+		Coord* new_node_coord = graph.stepNode(nearest_node->coord, random_coord, STEPSIZE);
+		
 
 		//if (obstacle between new_node and nearest_node) {
 		
-		if(false) {
+		if(graph.checkObstacle(nearest_node->coord, new_node_coord) ) { // If obstacle is in between two nodes return true
 			continue;
 		} 
 		else {
+			Node* new_node = new Node(i, new_node_coord); // Create a new node step size away from the nearest node towards the random point
 			graph.addNode(new_node);
 			graph.addEdge(nearest_node, new_node, graph.findDistance(nearest_node->coord, new_node->coord));
 			i++;
 		}
 	}
 	
-	//graph.printGraph();
+	graph.printGraph();
 	graph.printCellPop();
 	
 
 	cin.get();
 }
 
+int main() {
+	rrtStar();
 
+	return 0;
+}
