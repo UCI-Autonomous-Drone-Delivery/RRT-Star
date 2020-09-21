@@ -120,68 +120,35 @@ std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
 	float zStart = -r + c;
 	float zEnd = r + c;
 
-	if(zStart>=MAPSIZE) {
-		zStart=MAPSIZE-1;
-	}
-	if(zStart<0) {
-		zStart=0;
-	}
-
-	if(zEnd>MAPSIZE) {
-		zEnd=MAPSIZE-1;
-	}
-	if(zEnd<0) {
-		zEnd=0;
-	}
 
 
 	float yStart,yEnd;
 	cout << "zStart,zEnd=" << zStart << "," << zEnd << "\n";
 	for(float z=zStart;z<=zEnd;z+=CELLSIZE) {
+		if(z>=MAPSIZE || z < 0) {
+			continue;
+		}
 		cout<< "z is: " << z << "\n";
 
 		//integral y bounds
 		yStart=-sqrt(pow(r,2) - pow(z-c,2)) + b;
 		yEnd=sqrt(pow(r,2) - pow(z-c,2)) + b;
 
-		if(yStart>=MAPSIZE) {
-		yStart=MAPSIZE-1;
-		}
-		if(yStart<0) {
-			yStart=0;
-		}
-
-		if(yEnd>MAPSIZE) {
-			yEnd=MAPSIZE-1;
-		}
-		if(yEnd<0) {
-			yEnd=0;
-		}
 
 
 		cout << "yStart,yEnd=" << yStart << "," << yEnd << "\n";
 		float xStart,xEnd;
 
 		for(float y=yStart;y<=yEnd && y<MAPSIZE;y+=CELLSIZE) {
+			if(y>=MAPSIZE || y < 0) {
+				continue;
+			}
 			cout<< "y is: " << y << "\n";
 
 			//integral x bounds
 			xStart=-sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
 			xEnd=sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
 
-			if(xStart>=MAPSIZE) {
-				xStart=MAPSIZE-1;
-			}
-			if(xStart<0) {
-				xStart=0;
-			}
-
-			if(xEnd>MAPSIZE) {
-				xEnd=MAPSIZE-1;
-			}
-			if(xEnd<0) {
-				xEnd=0;
-			}
 
 			cout << "xStart,xEnd=" << xStart << "," << xEnd << "\n";
 
@@ -323,10 +290,10 @@ int main() {
 	//graph.printGraph();
 	//graph.printCellPop();
 
-	Coord* testCoord=new Coord(50,0,0);
+	Coord* testCoord=new Coord(0,0,99);
 	Node* a = new Node(1,testCoord); // Nearest Node from the random point
 
-	graph.nearestNeighbors(51,a);
+	graph.nearestNeighbors(71,a);
 
 	cin.get();
 }
