@@ -108,6 +108,11 @@ float Graph::findDistance(Coord* coord_src, Coord* coord_dest)
 }
 
 
+int roundDown(int n, int m) {
+    return n >= 0 ? (n / m) * m : ((n - m + 1) / m) * m;
+}
+
+
 
 std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
 	float a = node->coord->x;
@@ -120,6 +125,8 @@ std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
 	float zStart = -r + c;
 	float zEnd = r + c;
 
+	zStart=roundDown(zStart,CELLSIZE);
+	zEnd=roundDown(zEnd,CELLSIZE);
 
 
 	float yStart,yEnd;
@@ -133,6 +140,9 @@ std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
 		//integral y bounds
 		yStart=-sqrt(pow(r,2) - pow(z-c,2)) + b;
 		yEnd=sqrt(pow(r,2) - pow(z-c,2)) + b;
+
+		yStart=roundDown(yStart,CELLSIZE);
+		yEnd=roundDown(yEnd,CELLSIZE);
 
 
 
@@ -149,6 +159,8 @@ std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
 			xStart=-sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
 			xEnd=sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
 
+			xStart=roundDown(xStart,CELLSIZE);
+			xEnd=roundDown(xEnd,CELLSIZE);
 
 			cout << "xStart,xEnd=" << xStart << "," << xEnd << "\n";
 
@@ -290,10 +302,10 @@ int main() {
 	//graph.printGraph();
 	//graph.printCellPop();
 
-	Coord* testCoord=new Coord(0,0,99);
+	Coord* testCoord=new Coord(0,0,0);
 	Node* a = new Node(1,testCoord); // Nearest Node from the random point
 
-	graph.nearestNeighbors(71,a);
+	graph.nearestNeighbors(87,a);
 
 	cin.get();
 }
