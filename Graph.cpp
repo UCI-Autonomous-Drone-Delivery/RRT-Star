@@ -34,12 +34,64 @@ Graph::Graph(int total_nodes, Coord* coord)
 };
 
 
-//Double check this idk if it works
 Coord* Graph::getCellCoords(Node* node) {		
 	Coord* cellCoord=new Coord;
 	cellCoord->x=(int)node->coord->x/CELLSIZE;
 	cellCoord->y=(int)node->coord->y/CELLSIZE;
 	cellCoord->z=(int)node->coord->z/CELLSIZE;
+
+	if(cellCoord->x>NUMCELLSX) {
+		cellCoord->x=NUMCELLSX-1;
+	}
+	if(cellCoord->y>NUMCELLSY) {
+		cellCoord->y=NUMCELLSY-1;
+	}
+	if(cellCoord->z>NUMCELLSZ) {
+		cellCoord->z=NUMCELLSZ-1;
+	}
+
+
+	if(cellCoord->x<0) {
+		cellCoord->x=0;
+	}
+	if(cellCoord->y<0) {
+		cellCoord->y=0;
+	}
+	if(cellCoord->z<0) {
+		cellCoord->z=0;
+	}
+
+	return cellCoord;
+}
+
+Coord* Graph::getCellCoords(int x,int y, int z) {		
+	Coord* cellCoord=new Coord;
+
+	cellCoord->x=x/CELLSIZE;
+	cellCoord->y=y/CELLSIZE;
+	cellCoord->z=z/CELLSIZE;
+
+	if(cellCoord->x>NUMCELLSX) {
+		cellCoord->x=NUMCELLSX-1;
+	}
+	if(cellCoord->y>NUMCELLSY) {
+		cellCoord->y=NUMCELLSY-1;
+	}
+	if(cellCoord->z>NUMCELLSZ) {
+		cellCoord->z=NUMCELLSZ-1;
+	}
+
+
+
+	if(cellCoord->x<0) {
+		cellCoord->x=0;
+	}
+	if(cellCoord->y<0) {
+		cellCoord->y=0;
+	}
+	if(cellCoord->z<0) {
+		cellCoord->z=0;
+	}
 
 	return cellCoord;
 }
@@ -54,6 +106,111 @@ float Graph::findDistance(Coord* coord_src, Coord* coord_dest)
 	float total_distance = sqrt((dist_x + dist_y + dist_z));
 	return total_distance;
 }
+
+
+
+std::vector<Node*> Graph::nearestNeighbors(float r, Node* node) {
+	float a = node->coord->x;
+	float b = node->coord->y;
+	float c = node->coord->z;
+
+	std::vector<Coord*> intersectCells;
+
+	//integral z bounds
+	float zStart = -r + c;
+	float zEnd = r + c;
+
+	if(zStart>=MAPSIZE) {
+		zStart=MAPSIZE-1;
+	}
+	if(zStart<0) {
+		zStart=0;
+	}
+
+	if(zEnd>MAPSIZE) {
+		zEnd=MAPSIZE-1;
+	}
+	if(zEnd<0) {
+		zEnd=0;
+	}
+
+
+	float yStart,yEnd;
+	cout << "zStart,zEnd=" << zStart << "," << zEnd << "\n";
+	for(float z=zStart;z<=zEnd;z+=CELLSIZE) {
+		cout<< "z is: " << z << "\n";
+
+		//integral y bounds
+		yStart=-sqrt(pow(r,2) - pow(z-c,2)) + b;
+		yEnd=sqrt(pow(r,2) - pow(z-c,2)) + b;
+
+		if(yStart>=MAPSIZE) {
+		yStart=MAPSIZE-1;
+		}
+		if(yStart<0) {
+			yStart=0;
+		}
+
+		if(yEnd>MAPSIZE) {
+			yEnd=MAPSIZE-1;
+		}
+		if(yEnd<0) {
+			yEnd=0;
+		}
+
+
+		cout << "yStart,yEnd=" << yStart << "," << yEnd << "\n";
+		float xStart,xEnd;
+
+		for(float y=yStart;y<=yEnd && y<MAPSIZE;y+=CELLSIZE) {
+			cout<< "y is: " << y << "\n";
+
+			//integral x bounds
+			xStart=-sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
+			xEnd=sqrt(pow(r,2) - pow(z-c,2) - pow(y-b,2)) + a;
+
+			if(xStart>=MAPSIZE) {
+				xStart=MAPSIZE-1;
+			}
+			if(xStart<0) {
+				xStart=0;
+			}
+
+			if(xEnd>MAPSIZE) {
+				xEnd=MAPSIZE-1;
+			}
+			if(xEnd<0) {
+				xEnd=0;
+			}
+
+			cout << "xStart,xEnd=" << xStart << "," << xEnd << "\n";
+
+			for(float x=xStart;x<=xEnd && x<MAPSIZE;x+=CELLSIZE) {
+				cout<< "x is: " << x << "\n";
+
+				if(x<0 || y<0 || z<0 || x>=MAPSIZE || y>=MAPSIZE || z>=MAPSIZE) {
+					continue;
+				}
+				else {
+
+					Coord* cellCoords=getCellCoords(x,y,z);
+					cout<< "adding ";
+					printCoord(cellCoords);
+					intersectCells.push_back(cellCoords);
+				}
+			}
+		}
+	}
+	vector<Node*> newN;
+
+	cout<<"number of cells is: "<<intersectCells.size()<<"\n";
+	for(int i=0;i<intersectCells.size();i++) {
+		printCoord(intersectCells.at(i));
+	}
+	return newN;
+}
+
+
 
 Node* Graph::nearestNode(Coord* random_coord)
 {
@@ -89,7 +246,6 @@ void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 {
 	//update weight
 	node_dest->weight = weight;
-
 	//add node_dest to connectedNodes list of node_src
 	adj_list[node_src->node_number]->connectedNodes.push_back(node_dest);
 
@@ -123,11 +279,15 @@ void Graph::addNode(Node* node) {
 	adj_list.push_back(node);		//add new node to adj list
 
 	//get cell coordinates, add cell coords to node and add node to the appropriate cell
-	Coord* cellCoord=getCellCoords(node);
-	node->cell_coord=cellCoord;
+	Coord* cellCoord = getCellCoords(node);
+	node->cell_coord = cellCoord;
 	cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
 
-	printNode(node);
+	//printNode(node);
+}
+
+void Graph::printCoord(Coord* coord) {
+	cout<< "(X,Y,Z) = (" << coord->x << "," << coord->y << "," <<coord->z<< ")\n";
 }
 
 void Graph::printNode(Node* node) {
@@ -161,8 +321,12 @@ int main() {
 	}
 	
 	//graph.printGraph();
-	graph.printCellPop();
-	
+	//graph.printCellPop();
+
+	Coord* testCoord=new Coord(50,0,0);
+	Node* a = new Node(1,testCoord); // Nearest Node from the random point
+
+	graph.nearestNeighbors(51,a);
 
 	cin.get();
 }

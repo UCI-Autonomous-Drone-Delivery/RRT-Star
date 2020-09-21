@@ -80,6 +80,7 @@ class Graph {
 public:
     Graph(int total_nodes, Coord* coord);
     Coord* getCellCoords(Node* node);
+    Coord* getCellCoords(int x,int y, int z);
     std::vector<Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
     std::vector <Node*> adj_list;
     void addEdge(int u, int v, float w);
@@ -88,12 +89,14 @@ public:
     Coord* stepNode(Coord* coord, float step_size);
     void addNode(Node* node);
     void addEdge(Node* node_src, Node* node_dest, float weight);
-
+    std::vector<Node*> nearestNeighbors(float r, Node* node);
 
     //Debugging Functions
     void printCellPop();
     void printGraph();
     void printNode(Node* node);
+    void printCoord(Coord* coord);
+
 }; 
 
 
