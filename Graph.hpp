@@ -73,7 +73,7 @@ public:
     float findDistance(Coord* coord_src, Coord* coord_dest);
     void addNode(Node* node);
     void addEdge(Node* node_src, Node* node_dest, float weight);
-
+    std::vector<Node*> nearestNeighbors(Node* node, float r);
 
     //Debugging Functions
     void printCellPop();

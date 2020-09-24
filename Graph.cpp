@@ -33,6 +33,17 @@ Graph::Graph(int total_nodes, Coord* coord)
 	}
 };
 
+vector<Node*> Graph::nearestNeighbors(Node* node, float r) {
+	Coord* coord = node->coord;
+	vector<Node*> neighbors;
+	for(int i=0;i<num_nodes;i++) {
+		//if distance between node in adj_list and node param < radius
+		if(findDistance(coord,adj_list.at(i)->coord)<=r) {
+			neighbors.push_back(adj_list.at(i));
+		}
+	}
+	return neighbors;
+}
 
 //Double check this idk if it works
 Coord* Graph::getCellCoords(Node* node) {		
