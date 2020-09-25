@@ -5,7 +5,7 @@
 const int MAPSIZE=100; 
 
 //Number of Nodes to be created
-const int NUMNODES=20;
+const int NUMNODES=256;
 const float STEPSIZE=10.0f;
 
 //Number of meters per cell

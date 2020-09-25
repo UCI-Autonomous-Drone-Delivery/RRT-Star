@@ -6,6 +6,9 @@
 #include <time.h>
 #include <cmath>
 #include <iostream>
+#include <chrono>
+#include <cuda.h>
+typedef std::chrono::high_resolution_clock Clock;
 
 #include "Constants.hpp"
 
@@ -74,7 +77,7 @@ public:
     void addNode(Node* node);
     void addEdge(Node* node_src, Node* node_dest, float weight);
     std::vector<Node*> nearestNeighbors(Node* node, float r);
-
+    std::vector<Node*> nearestNeighborsGPU(Node* node, float r);
     //Debugging Functions
     void printCellPop();
     void printGraph();
