@@ -36,7 +36,8 @@ Graph::Graph(int total_nodes, Coord* coord)
 vector<Node*> Graph::nearestNeighbors(Node* node, float r) {
 	Coord* coord = node->coord;
 	vector<Node*> neighbors;
-	for(int i=0;i<num_nodes;i++) {
+	for(int i=0;i<adj_list.size();i++) {
+
 		//if distance between node in adj_list and node param < radius
 		if(findDistance(coord,adj_list.at(i)->coord)<=r) {
 			neighbors.push_back(adj_list.at(i));
@@ -183,31 +184,39 @@ void rrtStar() { // Right now its RRT
 	while (i <= NUMNODES) {
 		Coord* random_coord = new Coord();	// Random Position
 		Node* nearest_node = graph.nearestNode(random_coord); // Nearest Node from the random point
-		Coord* new_node_coord = graph.stepNode(nearest_node->coord, random_coord, STEPSIZE);
 		
-
 		//if (obstacle between new_node and nearest_node) {
-		
-		if(graph.checkObstacle(nearest_node->coord, new_node_coord) ) { // If obstacle is in between two nodes return true
+		if(graph.checkObstacle(nearest_node->coord, random_coord) ) { // If obstacle is in between two nodes return true
 			continue;
-		} 
-		else {
-			Node* new_node = new Node(i, new_node_coord); // Create a new node step size away from the nearest node towards the random point
-			graph.addNode(new_node);
-			graph.addEdge(nearest_node, new_node, graph.findDistance(nearest_node->coord, new_node->coord));
-			i++;
 		}
+		Node* new_node=new Node(i,random_coord);
+		float cost = graph.findDistance(nearest_node->coord,random_coord);
+
+		graph.addNode(new_node);
+		graph.addEdge(nearest_node, new_node, cost);
+
+		vector<Node*> neighbors=graph.nearestNeighbors(new_node,RADIUS);
+		for(int j=0;j<neighbors.size();j++) {
+			if(new_node->weight + graph.findDistance(new_node->coord,neighbors.at(j)->coord) < neighbors.at(j)->weight) {
+
+				graph.addEdge(
+					new_node,
+					neighbors.at(j),
+					new_node->weight + graph.findDistance(new_node->coord,neighbors.at(j)->coord)
+				);
+			}
+		}
+
+		i++;
 	}
 	
 	graph.printGraph();
 	graph.printCellPop();
 	
-
 	cin.get();
 }
 
 int main() {
 	rrtStar();
-
 	return 0;
 }

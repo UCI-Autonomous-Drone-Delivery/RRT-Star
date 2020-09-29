@@ -1,6 +1,9 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+//Size of search radius for nearest neighbors
+const int RADIUS=50;
+
 //assume map is a cube for now, this will be changed later
 const int MAPSIZE=100; 
 
