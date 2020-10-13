@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <vector>
+#include <list>
 #include <time.h>
 #include <cmath>
 #include <iostream>
@@ -37,6 +38,8 @@ struct Node {
     float weight;
     Coord* coord;
     Coord* cell_coord;
+    bool visited;
+    Node* parent;
     
     Node() // Base Constructor
     {
@@ -49,12 +52,17 @@ struct Node {
 
         coord = new_coord;
         weight = 0; // Temp value
+        visited = false;
+        parent = NULL;
     }
 
     Node(int node_num, Coord* new_coord) // Constructor for every other new point
     {
         node_number = node_num;
+        weight = 0; // Temp value
         coord = new_coord;
+        visited = false;
+        parent = NULL;
     }
 };
 
@@ -74,6 +82,7 @@ public:
     void addNode(Node* node);
     void addEdge(Node* node_src, Node* node_dest, float weight);
     std::vector<Node*> nearestNeighbors(Node* node, float r);
+    
 
     //Debugging Functions
     void printCellPop();
