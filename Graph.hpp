@@ -16,9 +16,9 @@ struct Coord {
 
     Coord()
     {
-        x = rand() % MAPSIZE;
-        y = rand() % MAPSIZE;
-        z = rand() % MAPSIZE;
+        x = float(rand() % MAPSIZE);
+        y = float(rand() % MAPSIZE);
+        z = float(rand() % MAPSIZE);
     }
 
     Coord(float x_new, float y_new, float z_new)
@@ -106,13 +106,15 @@ public:
 
     // Getter Functions
     Coord* getCellCoords(Node* node);
-    void getPath();
+    void setPath();
     std::vector<Node*> getAdjList();
+    std::stack<Node*> getPath();
 
     //Debugging Functions
     void printCellPop();
     void printGraph();
     void printPath();
+
 }; 
 
 #endif

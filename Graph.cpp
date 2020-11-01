@@ -128,12 +128,12 @@ void Graph::addNode(Node* node) {
 	adj_list.push_back(node);		//add new node to adj list
 
 	//get cell coordinates, add cell coords to node and add node to the appropriate cell
-	Coord* cellCoord = getCellCoords(node);
-	node->cell_coord = cellCoord;
+	//Coord* cellCoord = getCellCoords(node);
+	//node->cell_coord = cellCoord;
 
-	node->printNode();
+	//node->printNode();
 
-	cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
+	//cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
 }
 
 void Graph::addNodeStack(Node* node) {
@@ -144,15 +144,21 @@ void Graph::addNodeStack(Node* node) {
 
 //Double check this idk if it works
 Coord* Graph::getCellCoords(Node* node) {
+	
 	Coord* cellCoord = new Coord;
-	cellCoord->x = (int)node->coord->x / CELLSIZE;
+	
+	/*cellCoord->x = (int)node->coord->x / CELLSIZE;
 	cellCoord->y = (int)node->coord->y / CELLSIZE;
-	cellCoord->z = (int)node->coord->z / CELLSIZE;
+	cellCoord->z = (int)node->coord->z / CELLSIZE;*/
 
 	return cellCoord;
+
 }
 
-void Graph::getPath() {
+void Graph::setPath() {
+	if (path.empty()) {
+		return;
+	}
 	Node* curr = path.top()->parent;
 	while (curr) {
 		//std::cout << "Current Node is " << curr->node_number << endl;
@@ -163,6 +169,10 @@ void Graph::getPath() {
 
 std::vector<Node*> Graph::getAdjList() {
 	return adj_list;
+}
+
+std::stack<Node*> Graph::getPath() {
+	return path;
 }
 
 // Debug Functions
