@@ -8,6 +8,7 @@
 #include <time.h>
 #include <cmath>
 #include <iostream>
+#include <assert.h>
 
 #include "Constants.hpp"
 
@@ -16,9 +17,9 @@ struct Coord {
 
     Coord()
     {
-        x = rand() % MAPSIZE;
-        y = rand() % MAPSIZE;
-        z = rand() % MAPSIZE;
+        x = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
+        y = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
+        z = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
     }
 
     Coord(float x_new, float y_new, float z_new)
@@ -26,6 +27,11 @@ struct Coord {
         x = x_new;
         y = y_new;
         z = z_new;
+    }
+
+    void printCoord() {
+        using namespace std;
+        cout << "Coord (X,Y,Z) = (" << x << "," << y << "," << z << ")\n" << endl;
     }
 };
 
@@ -48,9 +54,8 @@ struct Node {
         float x = ((float) rand()) / (float) MAPSIZE;
         float y = ((float) rand()) / (float) MAPSIZE;
         float z = ((float) rand()) / (float) MAPSIZE;
-        Coord* new_coord = new Coord(x, y, z);
 
-        coord = new_coord;
+        coord = new Coord(x, y, z);
         weight = 0; // Temp value
         visited = false;
         parent = NULL;
@@ -69,12 +74,19 @@ struct Node {
         cell_coord = NULL;
     }
 
+    ~Node()
+    {
+        delete coord;
+        delete cell_coord;
+        parent = NULL;
+    }
+
     void printNode() {
         using namespace std;
         cout << "Node: " << node_number << endl;
-        cout << "Coord(X,Y,Z) = (" << coord->x << "," << coord->y << "," << coord->z << ")\n";
-        if(cell_coord != NULL)
-            cout << "Cell (X,Y,Z) = (" << cell_coord->x << "," << cell_coord->y << "," << cell_coord->z << ")\n" << endl;
+        cout << "Coord(X,Y,Z) = (" << coord->x << "," << coord->y << "," << coord->z << ")\n\n";
+        //if(cell_coord != NULL)
+            //cout << "Cell (X,Y,Z) = (" << cell_coord->x << "," << cell_coord->y << "," << cell_coord->z << ")\n" << endl;
     }
 
 
@@ -89,7 +101,8 @@ class Graph {
 
 public:
     Graph(int total_nodes, Coord* coord);
-    
+    ~Graph();
+
     // Utility Functions
 
     Coord* stepNode(Coord* coord, Coord* random_coord, float step_size);
@@ -101,13 +114,17 @@ public:
     
     // Setter Functions
     void addEdge(Node* node_src, Node* node_dest, float weight);
+    void removeEdge(Node* node_src, Node* node_dest);
     void addNode(Node* node);
+    void addToGraph(Node* node_src, Node* node_dest);
     void addNodeStack(Node* node);
 
     // Getter Functions
     Coord* getCellCoords(Node* node);
-    void getPath();
+    void setPath();
+    
     std::vector<Node*> getAdjList();
+    std::stack<Node*> getPath();
 
     //Debugging Functions
     void printCellPop();

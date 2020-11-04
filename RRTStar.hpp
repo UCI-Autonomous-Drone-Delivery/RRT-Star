@@ -3,6 +3,6 @@
 
 #include "Graph.hpp"
 
-Graph rrtStar(Coord* startingCoord, Coord* goalCoord);
+Graph* rrtStar(Coord* startingCoord, Coord* goalCoord);
 
 #endif
