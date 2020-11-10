@@ -10,6 +10,15 @@ const float GOALRADIUS = 150;
 //assume map is a cube for now, this will be changed later
 const int MAPSIZE=1000; 
 
+const int MAPMINX = -500;
+const int MAPMINY = -500;
+const int MAPMINZ = 0;
+
+const int MAPMAXX = 500;
+const int MAPMAXY = 500;
+const int MAPMAXZ = 1000;
+
+
 //Number of Nodes to be created
 const int NUMNODES=200;
 const float STEPSIZE=50.f;
@@ -23,6 +32,10 @@ const int CELLSIZE=50;
 const int NUMCELLSX=2;
 const int NUMCELLSY=2;
 const int NUMCELLSZ=2;
+
+const int DRONESIZE = 0.1;
+const int MINOBSTDIST = DRONESIZE * 1.5;
+
 
 
 #endif
