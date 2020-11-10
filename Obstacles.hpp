@@ -1,5 +1,6 @@
-#ifndef GRAPH_HPP
-#define GRAPH_HPP
+#ifndef OBSTACLES_HPP
+#define OBSTACLES_HPP
+
 
 #include <stdlib.h>
 #include <vector>
@@ -49,6 +50,8 @@ public:
 	void addObstacle(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
 	bool checkInObstacle(Coord* coord);
 	bool checkIntersectObstacle(Coord* A, Coord* B);
+	void crossProduct(float a[], float b[], float out[]);
+
 };
 
 

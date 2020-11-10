@@ -1,4 +1,5 @@
 #include "Obstacles.hpp"
+#include "Graph.hpp"
 
 
 Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
@@ -29,9 +30,9 @@ void Obstacles::crossProduct(float a[], float b[], float out[]) {
 //returns true if in object
 bool Obstacles::checkInObstacle(Coord* c) {
 	//if outside map, return true
-	if (c->x >= ob->MAPMAXX - MINOBSTDIST || c->x <= ob->MAPMINX + MINOBSTDIST ||
-		c->y >= ob->MAPMAXY - MINOBSTDIST || c->y <= ob->MAPMINY + MINOBSTDIST ||
-		c->z >= ob->MAPMAXZ - MINOBSTDIST || c->z <= ob->MAPMINZ + MINOBSTDIST)
+	if (c->x >= MAPMAXX - MINOBSTDIST || c->x <= MAPMINX + MINOBSTDIST ||
+		c->y >= MAPMAXY - MINOBSTDIST || c->y <= MAPMINY + MINOBSTDIST ||
+		c->z >= MAPMAXZ - MINOBSTDIST || c->z <= MAPMINZ + MINOBSTDIST)
 	{
 		return true;
 	}
@@ -50,6 +51,14 @@ bool Obstacles::checkInObstacle(Coord* c) {
 	return false;
 }
 
-bool Obstacles::checkIntersectObstacle(Coord* A, Coord* B);
+bool Obstacles::checkIntersectObstacle(Coord* A, Coord* B) {
+	//loop through obstacles
+		//loop through faces
+			//get equation for plane of face
+			//check where AB intersects this plane
+			//if the intersection point is within the face, we have a collision (return true)
+
+	return false;
+}
 
 
