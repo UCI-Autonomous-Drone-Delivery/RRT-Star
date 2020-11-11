@@ -14,23 +14,27 @@
 #include "Graph.hpp"
 
 struct Obstacle {
-	float xMin;
-	float yMin;
-	float zMin;
+	//f=front, b=back, l=left, r=right, u=up, d=down
+	//vertices
+	Coord* ful;
+	Coord* fur;
+	Coord* fdl;
+	Coord* fdr;
+	Coord* bul;
+	Coord* bur;
+	Coord* bdl;
+	Coord* bdr;
 
-	float xMax;
-	float yMax;
-	float zMax;
-
-    Obstacle(float minX, float maxX, float minY, float maxY, float minZ, float maxZ)
+    Obstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Coord* f, Coord* g, Coord* h)
     {
-		xMin = minX;
-		yMin = minY;
-		zMin = minZ;
-
-		xMax = maxX;
-		yMax = maxY;
-		zMax = maxZ;
+		ful = a;
+		fur = b;
+		fdl = c;
+		fdr = d;
+		bul = e;
+		bur = f;
+		bdl = g;
+		bdr = h;
     }
 };
 

@@ -37,17 +37,8 @@ bool Obstacles::checkInObstacle(Coord* c) {
 		return true;
 	}
 
-	for (int i = 0; i < numObstacles; i++)
-	{
-		Obstacle* ob = obstacleList.at(i);
-		//if in object, return true
-		if (c->x <= ob->xMax + MINOBSTDIST && c->x >= ob->xMin - MINOBSTDIST &&
-			c->y <= ob->yMax + MINOBSTDIST && c->y >= ob->yMin - MINOBSTDIST &&
-			c->z <= ob->zMax + MINOBSTDIST && c->z >= ob->zMin - MINOBSTDIST)
-		{
-			return true;
-		}
-	}
+	//handle diagonal objects
+
 	return false;
 }
 
@@ -57,6 +48,50 @@ bool Obstacles::checkIntersectObstacle(Coord* A, Coord* B) {
 			//get equation for plane of face
 			//check where AB intersects this plane
 			//if the intersection point is within the face, we have a collision (return true)
+	Coord* dispVect1;
+	Coord* directVect1;
+	Coord* dispVect2;
+	Coord* directVect2;
+	
+	for (int i = 0; i < numObstacles; i++) {
+		Obstacle* ob = obstacleList.at(i);
+		//get top face eqn
+
+		//line1 eqn (ful-fur)
+		dispVect1 = new Coord(ob->ful->x, ob->ful->y, ob->ful->z);
+		directVect1 = new Coord(ob->ful->x - ob->fur->x, ob->ful->y - ob->fur->y, ob->ful->z - ob->fur->z);
+
+		//line2 eqn (ful-bul)
+		dispVect2 = new Coord(ob->ful->x, ob->ful->y, ob->ful->z);
+		directVect2 = new Coord(ob->ful->x - ob->bul->x, ob->ful->y - ob->bul->y, ob->ful->z - ob->bul->z);
+
+		//check intersect, return true if it intersects within face
+
+
+
+
+		//get down face eqn
+		dispVect1 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
+		directVect1 = new Coord(ob->fdl->x - ob->fdr->x, ob->fdl->y - ob->fdr->y, ob->fdl->z - ob->fdr->z);
+
+		//line2 eqn (ful-bul)
+		dispVect2 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
+		directVect2 = new Coord(ob->fdl->x - ob->bdl->x, ob->fdl->y - ob->bdl->y, ob->fdl->z - ob->bdl->z);
+		//check intersect
+
+		//get left face eqn
+		//check intersect
+
+		//get right face eqn
+		//check intersect
+
+		//get front face eqn
+		//check intersect
+
+		//get back face eqn
+		//check intersect
+
+	}
 
 	return false;
 }
