@@ -54,7 +54,8 @@ public:
 	void addObstacle(float minX, float minY, float minZ, float maxX, float maxY, float maxZ);
 	bool checkInObstacle(Coord* coord);
 	bool checkIntersectObstacle(Coord* A, Coord* B);
-	void crossProduct(float a[], float b[], float out[]);
+	Coord* crossProduct(Coord* A, Coord* B);
+
 
 };
 
