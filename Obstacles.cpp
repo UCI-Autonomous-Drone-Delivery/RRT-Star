@@ -1,7 +1,6 @@
 #include "Obstacles.hpp"
 #include "Graph.hpp"
 
-
 Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
 	xMapMin = xMin;
 	yMapMin = yMin;
@@ -14,10 +13,154 @@ Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin,
 	numObstacles = 0;
 }
 
-void Obstacles::addObstacle(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) {
-	Obstacle* obstacle = new Obstacle(minX, minY, minZ, maxX, maxY, maxZ);
-	obstacleList.push_back(obstacle);
+
+
+//Check the plane equations and make sure we're using the right vectors for each face. I haven't checked those yet
+void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Coord* f, Coord* g, Coord* h) {
+	Obstacle* obstacle = new Obstacle(a,b,c,d,e,f,g,h);
+	
 	numObstacles++;
+
+
+	//calculate plane equations
+	Coord* ful = a;
+	Coord* fur = b;
+	Coord* fdl = c;
+	Coord* fdr = d;
+	Coord* bul = e;
+	Coord* bur = f;
+	Coord* bdl = g;
+	Coord* bdr = h;
+
+	Coord* dispVect1;
+	Coord* directVect1;
+	Coord* directVect2;
+
+	float xo, yo, zo, a1, b1, c1, d1;
+	Coord* face;
+	Coord* vector1 = new Coord();
+	Coord * vector2 = new Coord();
+
+	//----------------------------------------up face plane equation------------------------------------------//
+	xo = ful->x;
+	yo = ful->y;
+	zo = ful->z;
+
+	//line1 eqn (ful -> fur)
+	directVect1 = new Coord(ful->x - fur->x, ful->y - fur->y, ful->z - fur->z);
+
+	//line2 eqn (ful -> bul)
+	directVect2 = new Coord(bul->x - ful->x, bul->y - ful->y, bul->z - ful->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double checck this line
+	Plane* plane = new Plane(a1, b1, c1, d1);
+	obstacle->pUp = plane;
+
+
+	//----------------------------------------down face plane equation------------------------------------------//
+	xo = fdl->x;
+	yo = fdl->y;
+	zo = fdl->z;
+
+	//line1 eqn (fdl -> fdr)
+	directVect1 = new Coord(fdr->x - fdl->x, fdr->y - fdl->y, fdr->z - fdl->z);
+
+	//line2 eqn (fdl -> bdl)
+	directVect2 = new Coord(bdl->x - fdl->x, bdl->y - fdl->y, bdl->z - fdl->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
+	plane = new Plane(a1, b1, c1, d1);
+	obstacle->pDown = plane;
+
+
+	//----------------------------------------left face plane equation------------------------------------------//
+	xo = fdl->x;
+	yo = fdl->y;
+	zo = fdl->z;
+
+	//line1 eqn (fdl -> bdl)
+	directVect1 = new Coord(bdl->x - fdl->x, bdl->y - fdl->y, bdl->z - fdl->z);
+
+	//line5 eqn (fdl -> ful)
+	directVect2 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
+	plane = new Plane(a1, b1, c1, d1);
+	obstacle->pLeft = plane;
+
+
+	//----------------------------------------right face plane equation------------------------------------------//
+	xo = fdr->x;
+	yo = fdr->y;
+	zo = fdr->z;
+
+	//line1 eqn (fdr -> bdr)
+	directVect1 = new Coord(bdr->x - fdr->x, bdr->y - fdr->y, bdr->z - fdr->z);
+
+	//line2 eqn (fdr -> fur)
+	directVect2 = new Coord(fur->x - fdr->x, fur->y - fdr->y, fur->z - fdr->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
+	plane = new Plane(a1, b1, c1, d1);
+	obstacle->pRight = plane;
+
+	//----------------------------------------front face plane equation------------------------------------------//
+	xo = fdl->x;
+	yo = fdl->y;
+	zo = fdl->z;
+
+	//line1 eqn (fdl -> fdr)
+	directVect1 = new Coord(fdr->x - fdl->x, fdr->y - fdl->y, fdr->z - fdl->z);
+
+	//line2 eqn (fdl -> ful)
+	directVect2 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
+	plane = new Plane(a1, b1, c1, d1);
+	obstacle->pFront = plane;
+
+
+	//----------------------------------------back face plane equation------------------------------------------//
+	xo = bdl->x;
+	yo = bdl->y;
+	zo = bdl->z;
+
+	//line1 eqn (bdl -> bdr)
+	directVect1 = new Coord(bdr->x - bdl->x, bdr->y - bdl->y, bdr->z - bdl->z);
+
+	//line2 eqn (bdl -> bul)
+	directVect2 = new Coord(bul->x - bdl->x, bul->y - bdl->y, bul->z - bdl->z);
+
+	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
+	a1 = face->x;
+	b1 = face->y;
+	c1 = face->z;
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
+	plane = new Plane(a1, b1, c1, d1);
+	obstacle->pBack = plane;
+
+
+	obstacleList.push_back(obstacle);
 }
 
 //equivalent to A x B
@@ -30,109 +173,66 @@ Coord* Obstacles::crossProduct(Coord* A, Coord* B) {
 	return Out;
 }
 
-//returns true if in object
-bool Obstacles::checkInObstacle(Coord* c) {
+
+bool Obstacles::collisionCheck(Coord* A, Coord* B) {
+	Coord* intersect;
+
+	//check if points are in map (checkInMap returns true if in map)
+	bool status;
+	status = checkInMap(A);
+	if (status == false) {
+		return true;
+	}
+
+	status = checkInMap(B);
+	if (status == false) {
+		return true;
+	}
+
+	Coord* line = new Coord(B->x - A->x, B->y - A->y, B->z - A->z);
+	
+	//loop through obstacles
+	for (int i = 0; i < numObstacles; i++) {
+		//check if the obstacle is between A and B inclusive
+		Obstacle* ob = obstacleList.at(i);
+		status = checkObstacleInt(line,ob);
+		if(status == true) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+
+	//creates a plane equation and finds point of intersection
+bool Obstacles::checkObstacleInt(Coord* line, Obstacle* ob) {
+
+
+	//CheckTopFace
+		//find intersect of pUp
+		//get the 4 vectors formed by top corners 
+		//take the determinant of all four vectors  https://stackoverflow.com/questions/1560492/how-to-tell-whether-a-point-is-to-the-right-or-left-side-of-a-line 
+			//0 means it is on the line
+			//1 means it is on one side
+			//-1 means it is on the other side
+			//if the point is on the cube side of all of the vectors then it is inside the object
+			//NOTE: THIS CHECKS THE WHOLE LINE, WE NEED TO ACCOUNT FOR WHETHER THE POINT OF INTERSECTION IS BETWEEN THE TWO NODES OR NOT
+
+	//repeat for all faces
+
+	return NULL;
+}
+
+//returns true if within map
+bool Obstacles::checkInMap(Coord* c) {
 	//if outside map, return true
 	if (c->x >= MAPMAXX - MINOBSTDIST || c->x <= MAPMINX + MINOBSTDIST ||
 		c->y >= MAPMAXY - MINOBSTDIST || c->y <= MAPMINY + MINOBSTDIST ||
 		c->z >= MAPMAXZ - MINOBSTDIST || c->z <= MAPMINZ + MINOBSTDIST)
 	{
-		return true;
+		return false;
 	}
-
-	//handle diagonal objects
-
-	return false;
+	return true;
 }
-
-bool Obstacles::checkIntersectObstacle(Coord* A, Coord* B) {
-	//loop through obstacles
-		//loop through faces
-			//get equation for plane of face
-			//check where AB intersects this plane
-			//if the intersection point is within the face, we have a collision (return true)
-	Coord* dispVect1;
-	Coord* directVect1;
-	Coord* dispVect2;
-	Coord* directVect2;
-	
-	for (int i = 0; i < numObstacles; i++) {
-		Obstacle* ob = obstacleList.at(i);
-		//----------------------------------------up face equation------------------------------------------//
-
-		//line1 eqn (ful -> fur)
-		dispVect1 = new Coord(ob->ful->x, ob->ful->y, ob->ful->z);
-		directVect1 = new Coord(ob->ful->x - ob->fur->x, ob->ful->y - ob->fur->y, ob->ful->z - ob->fur->z);
-
-		//line2 eqn (ful -> bul)
-		dispVect2 = new Coord(ob->ful->x, ob->ful->y, ob->ful->z);
-		directVect2 = new Coord(ob->bul->x - ob->ful->x,ob->bul->y - ob->ful->y, ob->bul->z - ob->ful->z);
-
-		//check intersect, return true if it intersects within face
-
-
-
-		//----------------------------------------down face equation------------------------------------------//
-
-		//line1 eqn (fdl -> fdr)
-		dispVect1 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect1 = new Coord(ob->fdr->x - ob->fdl->x, ob->fdr->y - ob->fdl->y, ob->fdr->z - ob->fdl->z);
-
-		//line2 eqn (fdl -> bdl)
-		dispVect2 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect2 = new Coord(ob->bdl->x - ob->fdl->x, ob->bdl->y - ob->fdl->y, ob->bdl->z - ob->fdl->z);
-		//check intersect
-
-
-
-		//----------------------------------------left face equation------------------------------------------//
-
-		//line1 eqn (fdl -> bdl)
-		dispVect1 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect1 = new Coord(ob->bdl->x - ob->fdl->x, ob->bdl->y - ob->fdl->y, ob->bdl->z - ob->fdl->z);
-		
-		//line5 eqn (fdl -> ful)
-		dispVect2 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect2 = new Coord(ob->ful->x - ob->fdl->x, ob->ful->y - ob->fdl->y, ob->ful->z - ob->fdl->z);
-		//check intersect
-
-		
-		//----------------------------------------right face equation------------------------------------------//
-		
-		//line1 eqn (fdr -> bdr)
-		dispVect1 = new Coord(ob->fdr->x, ob->fdr->y, ob->fdr->z);
-		directVect1 = new Coord(ob->bdr->x - ob->fdr->x, ob->bdr->y - ob->fdr->y, ob->bdr->z - ob->fdr->z);
-
-		//line2 eqn (fdr -> fur)
-		dispVect2 = new Coord(ob->fdr->x, ob->fdr->y, ob->fdr->z);
-		directVect2 = new Coord(ob->fur->x - ob->fdr->x, ob->fur->y - ob->fdr->y, ob->fur->z - ob->fdr->z);
-		//check intersect
-
-
-		//----------------------------------------front face equation------------------------------------------//
-
-		//line1 eqn (fdl -> fdr)
-		dispVect1 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect1 = new Coord(ob->fdr->x - ob->fdl->x, ob->fdr->y - ob->fdl->y, ob->fdr->z - ob->fdl->z);
-
-		//line2 eqn (fdl -> ful)
-		dispVect2 = new Coord(ob->fdl->x, ob->fdl->y, ob->fdl->z);
-		directVect2 = new Coord(ob->ful->x - ob->fdl->x, ob->ful->y - ob->fdl->y, ob->ful->z - ob->fdl->z);
-		//check intersect
-
-		//----------------------------------------back face equation------------------------------------------//
-		//line1 eqn (bdl -> bdr)
-		dispVect1 = new Coord(ob->bdl->x, ob->bdl->y, ob->bdl->z);
-		directVect1 = new Coord(ob->bdr->x - ob->bdl->x, ob->bdr->y - ob->bdl->y, ob->bdr->z - ob->bdl->z);
-
-		//line2 eqn (bdl -> bul)
-		dispVect2 = new Coord(ob->bdl->x, ob->bdl->y, ob->bdl->z);
-		directVect2 = new Coord(ob->bul->x - ob->bdl->x, ob->bul->y - ob->bdl->y, ob->bul->z - ob->bdl->z);
-		//check intersect
-
-	}
-
-	return false;
-}
-
-
