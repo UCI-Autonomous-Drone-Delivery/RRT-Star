@@ -1,8 +1,10 @@
 #include "RRTStar.hpp"
 #include "Graph.hpp"
 
-Graph* rrtStar(Coord* startingCoord, Coord* goalCoord) {
+Graph* rrtStar(Coord homeCoord, Coord endCoord) {
 	// Creating the start of graph
+	Coord* startingCoord = new Coord(homeCoord.x, homeCoord.y, homeCoord.z);
+	Coord* goalCoord = new Coord(endCoord.x, endCoord.y, endCoord.z);
 	Graph* graph = new Graph(NUMNODES, startingCoord);
 
 	int i = 1;
