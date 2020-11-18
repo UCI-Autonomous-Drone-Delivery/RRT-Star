@@ -19,6 +19,11 @@ struct Plane {
 	float b;
 	float c;
 	float d;
+
+	Coord* line1;
+	Coord* line2;
+	Coord* line3;
+	Coord* line4;
 	Plane(float a1, float b1, float c1, float d1) {
 		a = a1;
 		b = b1;
@@ -78,7 +83,8 @@ public:
 	bool checkInMap(Coord* coord);
 	bool collisionCheck(Coord* A, Coord* B);
 	Coord* crossProduct(Coord* A, Coord* B);
-	bool checkObstacleInt(Coord* line, Obstacle* ob);
+	bool checkObstacleInt(Coord* A, Coord* B, Obstacle* ob);
+	bool pointInPlane(Coord* A, Coord* B, Plane* plane);
 
 };
 

@@ -32,14 +32,12 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	Coord* bdl = g;
 	Coord* bdr = h;
 
-	Coord* dispVect1;
+
 	Coord* directVect1;
 	Coord* directVect2;
 
 	float xo, yo, zo, a1, b1, c1, d1;
 	Coord* face;
-	Coord* vector1 = new Coord();
-	Coord * vector2 = new Coord();
 
 	//----------------------------------------up face plane equation------------------------------------------//
 	xo = ful->x;
@@ -47,7 +45,7 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	zo = ful->z;
 
 	//line1 eqn (ful -> fur)
-	directVect1 = new Coord(ful->x - fur->x, ful->y - fur->y, ful->z - fur->z);
+	directVect1 = new Coord(fur->x - ful->x, fur->y - ful->y, fur->z - ful->z);
 
 	//line2 eqn (ful -> bul)
 	directVect2 = new Coord(bul->x - ful->x, bul->y - ful->y, bul->z - ful->z);
@@ -56,7 +54,7 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	a1 = face->x;
 	b1 = face->y;
 	c1 = face->z;
-	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double checck this line
+	d1 = a1 * xo + b1 * yo + c1 * zo;		//Double check this line
 	Plane* plane = new Plane(a1, b1, c1, d1);
 	obstacle->pUp = plane;
 
@@ -173,7 +171,6 @@ Coord* Obstacles::crossProduct(Coord* A, Coord* B) {
 	return Out;
 }
 
-
 bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 	Coord* intersect;
 
@@ -189,13 +186,13 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 		return true;
 	}
 
-	Coord* line = new Coord(B->x - A->x, B->y - A->y, B->z - A->z);
+	
 	
 	//loop through obstacles
 	for (int i = 0; i < numObstacles; i++) {
 		//check if the obstacle is between A and B inclusive
 		Obstacle* ob = obstacleList.at(i);
-		status = checkObstacleInt(line,ob);
+		status = checkObstacleInt(A,B,ob);
 		if(status == true) {
 			return true;
 		}
@@ -205,11 +202,51 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 }
 
 
+//creates a plane equation and finds point of intersection
+bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
+	bool result;
 
-	//creates a plane equation and finds point of intersection
-bool Obstacles::checkObstacleInt(Coord* line, Obstacle* ob) {
+	if (((ob->pUp->a * A->x) + (ob->pUp->b * A->y) + (ob->pUp->c * A->z) - ob->pUp->d) * ((ob->pUp->a * B->x) + (ob->pUp->b * B->y) + (ob->pUp->c * B->z) - ob->pUp->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pUp);
+		if (result == true) {
+			return true;
+		}
+	}
 
+	if (((ob->pDown->a * A->x) + (ob->pDown->b * A->y) + (ob->pDown->c * A->z) - ob->pDown->d) * ((ob->pDown->a * B->x) + (ob->pDown->b * B->y) + (ob->pDown->c * B->z) - ob->pDown->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pDown);
+		if (result == true) {
+			return true;
+		}
+	}
 
+	if (((ob->pLeft->a * A->x) + (ob->pLeft->b * A->y) + (ob->pLeft->c * A->z) - ob->pLeft->d) * ((ob->pLeft->a * B->x) + (ob->pLeft->b * B->y) + (ob->pLeft->c * B->z) - ob->pLeft->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pLeft);
+		if (result == true) {
+			return true;
+		}
+	}
+
+	if (((ob->pRight->a * A->x) + (ob->pRight->b * A->y) + (ob->pRight->c * A->z) - ob->pRight->d) * ((ob->pRight->a * B->x) + (ob->pRight->b * B->y) + (ob->pRight->c * B->z) - ob->pRight->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pRight);
+		if (result == true) {
+			return true;
+		}
+	}
+
+	if (((ob->pFront->a * A->x) + (ob->pFront->b * A->y) + (ob->pFront->c * A->z) - ob->pFront->d) * ((ob->pFront->a * B->x) + (ob->pFront->b * B->y) + (ob->pFront->c * B->z) - ob->pFront->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pFront);
+		if (result == true) {
+			return true;
+		}
+	}
+
+	if (((ob->pBack->a * A->x) + (ob->pBack->b * A->y) + (ob->pBack->c * A->z) - ob->pBack->d) * ((ob->pBack->a * B->x) + (ob->pBack->b * B->y) + (ob->pBack->c * B->z) - ob->pBack->d) >= 0.0f) {
+		result = pointInPlane(A, B, ob->pBack);
+		if (result == true) {
+			return true;
+		}
+	}
 	//CheckTopFace
 		//find intersect of pUp
 		//get the 4 vectors formed by top corners 
@@ -235,4 +272,38 @@ bool Obstacles::checkInMap(Coord* c) {
 		return false;
 	}
 	return true;
+}
+
+bool Obstacles::pointInPlane(Coord* A, Coord* B, Plane* plane) {
+	Coord* AB;
+	Coord* AP;
+	float x, y, z;
+	float a, b, c;
+	float t;
+	Coord* p = new Coord();							//point of intersection
+	float x1, x2, y1, y2, z1, z2;
+
+	AB = new Coord(B->x - A->x, B->y - A->y, B->z - A->z);
+
+	x1 = A->x;
+	x2 = AB->x;
+	y1 = A->y;
+	y2 = AB->y;
+	z1 = A->z;
+	z2 = AB->z;
+
+	t = ((plane->d) - plane->a * x1 - plane->b * y1 - plane->c * z1) / (plane->a * x2 + plane->b * y2 + plane->c * z2);	// plane equation: a(x - xo) + b(y - yo) + c(z - zo) = 0;
+
+	p->x = x1 + (x2 * t);
+	p->y = y1 + (y2 * t);
+	p->z = z1 + (z2 * t);
+
+	//AP = new Coord(p->x - A->x, p->y - A->y, p->z - A->z);
+
+	if (plane->a * p->x + plane->b * p->y + plane->c * p->z - plane->d > 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
