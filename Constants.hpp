@@ -2,13 +2,13 @@
 #define CONSTANTS_H
 
 //Size of search radius for nearest neighbors
-const int RADIUS=100;
+const int RADIUS=10;
 
 //Goal Radius
-const float GOALRADIUS = 150;
+const float GOALRADIUS = 5;
 
 //assume map is a cube for now, this will be changed later
-const int MAPSIZE=1000; 
+const int MAPSIZE=100; 
 
 const int MAPMINX = -500;
 const int MAPMINY = -500;
@@ -20,8 +20,8 @@ const int MAPMAXZ = 1000;
 
 
 //Number of Nodes to be created
-const int NUMNODES=200;
-const float STEPSIZE=50.f;
+const int NUMNODES=4000;
+const float STEPSIZE=5.f;
 
 //Number of meters per cell
 const int CELLSIZE=50;
