@@ -17,9 +17,9 @@ struct Coord {
 
     Coord()
     {
-        x = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
-        y = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
-        z = float( (rand() % MAPSIZE) - MAPSIZE / 2 );
+        x = float( (rand() % MAPSIZEX) - MAPSIZEX / 2 );
+        y = float( (rand() % MAPSIZEY) - MAPSIZEY / 2 );
+        z = float( (rand() % MAPSIZEZ));
     }
 
     Coord(float x_new, float y_new, float z_new)
@@ -51,11 +51,7 @@ struct Node {
         node_number = 0;
         // Temp random coord
         
-        float x = ((float) rand()) / (float) MAPSIZE;
-        float y = ((float) rand()) / (float) MAPSIZE;
-        float z = ((float) rand()) / (float) MAPSIZE;
-
-        coord = new Coord(x, y, z);
+        coord = new Coord();
         weight = 0; // Temp value
         visited = false;
         parent = NULL;
@@ -107,7 +103,6 @@ public:
 
     Coord* stepNode(Coord* coord, Coord* random_coord, float step_size);
     Node* nearestNode(Coord* random_coord);
-    bool checkObstacle(Coord* coord_src, Coord* coord_dest);
     float findDistance(Coord* coord_src, Coord* coord_dest);
     
     std::vector<Node*> nearestNeighbors(Node* new_node, float r);
@@ -120,7 +115,7 @@ public:
     void addNodeStack(Node* node);
 
     // Getter Functions
-    Coord* getCellCoords(Node* node);
+    //Coord* getCellCoords(Node* node);
     void setPath();
     
     std::vector<Node*> getAdjList();

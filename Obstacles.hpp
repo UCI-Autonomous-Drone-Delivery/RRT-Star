@@ -1,7 +1,6 @@
 #ifndef OBSTACLES_HPP
 #define OBSTACLES_HPP
 
-
 #include <stdlib.h>
 #include <vector>
 #include <stack>
@@ -20,15 +19,18 @@ struct Plane {
 	float c;
 	float d;
 
-	Coord* line1;
-	Coord* line2;
-	Coord* line3;
-	Coord* line4;
+	Plane* side1;
+	Plane* side2;
+	Plane* side3;
+	Plane* side4;
+
+
 	Plane(float a1, float b1, float c1, float d1) {
 		a = a1;
 		b = b1;
 		c = c1;
 		d = d1;
+		
 	}
 };
 

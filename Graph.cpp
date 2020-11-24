@@ -108,18 +108,6 @@ float Graph::findDistance(Coord* coord_src, Coord* coord_dest)
 	return total_distance;
 }
 
-bool Graph::checkObstacle(Coord* coord_src, Coord* coord_dest) {
-
-	// Check if coordinate is outside boundaries
-	// This is very basic right now
-	if (coord_dest->x >= MAPSIZE / 2 || coord_dest->y >= MAPSIZE / 2 || coord_dest->z >= MAPSIZE / 2
-		|| coord_dest->x <= -(MAPSIZE / 2) || coord_dest->y <= -(MAPSIZE / 2) || coord_dest->z <= -(MAPSIZE / 2)) {
-		return true;
-	}
-	else {
-		return false;
-	}
-}
 
 // Setter Functions
 
@@ -172,17 +160,17 @@ void Graph::addNodeStack(Node* node) {
 
 // Getter Functions
 
-//Double check this idk if it works
-Coord* Graph::getCellCoords(Node* node) {
-	
-	float x = (int)node->coord->x / CELLSIZE;
-	float y = (int)node->coord->y / CELLSIZE;
-	float z = (int)node->coord->z / CELLSIZE;
-
-	Coord* cellCoord = new Coord(x, y, z);
-
-	return cellCoord;
-}
+////Double check this idk if it works
+//Coord* Graph::getCellCoords(Node* node) {
+//	
+//	float x = (int)node->coord->x / CELLSIZE;
+//	float y = (int)node->coord->y / CELLSIZE;
+//	float z = (int)node->coord->z / CELLSIZE;
+//
+//	Coord* cellCoord = new Coord(x, y, z);
+//
+//	return cellCoord;
+//}
 
 void Graph::setPath() {
 	Node* curr = path.top()->parent;

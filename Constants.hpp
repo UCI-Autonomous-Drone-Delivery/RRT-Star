@@ -5,18 +5,22 @@
 const int RADIUS=10;
 
 //Goal Radius
-const float GOALRADIUS = 5;
+const float GOALRADIUS = 10;
 
 //assume map is a cube for now, this will be changed later
-const int MAPSIZE=100; 
 
-const int MAPMINX = -500;
-const int MAPMINY = -500;
+const int MAPMINX = -50;
+const int MAPMINY = -50;
 const int MAPMINZ = 0;
 
-const int MAPMAXX = 500;
-const int MAPMAXY = 500;
-const int MAPMAXZ = 1000;
+const int MAPMAXX = 50;
+const int MAPMAXY = 50;
+const int MAPMAXZ = 100;
+
+const int MAPSIZEX = abs(MAPMAXX - MAPMINX);
+const int MAPSIZEY = abs(MAPMAXY - MAPMINY);
+const int MAPSIZEZ = abs(MAPMAXZ - MAPMINZ);
+
 
 
 //Number of Nodes to be created
@@ -33,8 +37,8 @@ const int NUMCELLSX=2;
 const int NUMCELLSY=2;
 const int NUMCELLSZ=2;
 
-const int DRONESIZE = 0.1;
-const int MINOBSTDIST = DRONESIZE * 1.5;
+const float DRONESIZE = 0.1;
+const float MINOBSTDIST = DRONESIZE * 1.5;
 
 
 

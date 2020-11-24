@@ -1,7 +1,24 @@
 #include "RRTStar.hpp"
 #include "Graph.hpp"
 
+
+
 Graph* rrtStar(Coord homeCoord, Coord endCoord) {
+	//Initializes obstacles here
+	Coord* ful = new Coord(50, 50, 75);
+	Coord* fur = new Coord(75, 50, 75);
+	Coord* fdl = new Coord(50, 50, 50);
+	Coord* fdr = new Coord(75, 50, 50);
+	Coord* bul = new Coord(50, 75, 75);
+	Coord* bur = new Coord(75, 75, 75);
+	Coord* bdl = new Coord(50, 75, 50);
+	Coord* bdr = new Coord(75, 75, 50);
+
+	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
+
+
+
+
 	// Creating the start of graph
 	Coord* startingCoord = new Coord(homeCoord.x, homeCoord.y, homeCoord.z);
 	Coord* goalCoord = new Coord(endCoord.x, endCoord.y, endCoord.z);
@@ -14,7 +31,10 @@ Graph* rrtStar(Coord homeCoord, Coord endCoord) {
 		Node* nearest_node = graph->nearestNode(random_coord); // Nearest Node from the random point
 
 		// STILL NEED TO FINISH CHECKOBSTACLE
-		if (graph->checkObstacle(nearest_node->coord, random_coord)) { // If obstacle is in between two nodes return true
+		if (o.collisionCheck(nearest_node->coord, random_coord)) { // If obstacle is in between two nodes return true
+			std::cout << "collision here!\n";
+			nearest_node->printNode();
+			random_coord->printCoord();
 			delete random_coord;
 			continue;
 		}
