@@ -13,8 +13,8 @@ const int MAPMINX = -50;
 const int MAPMINY = -50;
 const int MAPMINZ = 0;
 
-const int MAPMAXX = 50;
-const int MAPMAXY = 50;
+const int MAPMAXX = 130;
+const int MAPMAXY = 100;
 const int MAPMAXZ = 100;
 
 const int MAPSIZEX = abs(MAPMAXX - MAPMINX);
@@ -24,7 +24,7 @@ const int MAPSIZEZ = abs(MAPMAXZ - MAPMINZ);
 
 
 //Number of Nodes to be created
-const int NUMNODES=4000;
+const int NUMNODES=10000;
 const float STEPSIZE=5.f;
 
 //Number of meters per cell

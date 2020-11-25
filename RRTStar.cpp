@@ -5,14 +5,14 @@
 
 Graph* rrtStar(Coord homeCoord, Coord endCoord) {
 	//Initializes obstacles here
-	Coord* ful = new Coord(50, 50, 75);
-	Coord* fur = new Coord(75, 50, 75);
-	Coord* fdl = new Coord(50, 50, 50);
-	Coord* fdr = new Coord(75, 50, 50);
-	Coord* bul = new Coord(50, 75, 75);
-	Coord* bur = new Coord(75, 75, 75);
-	Coord* bdl = new Coord(50, 75, 50);
-	Coord* bdr = new Coord(75, 75, 50);
+	Coord* ful = new Coord(18.12f, -23.37f, 25.34f);
+	Coord* fur = new Coord(18.12f, 16.63f, 25.34f);
+	Coord* fdl = new Coord(18.12f, -23.37f,-1.02f);
+	Coord* fdr = new Coord(18.12f, 16.63f, -1.02f);
+	Coord* bul = new Coord(98.12f, -23.37f, 25.34f);
+	Coord* bur = new Coord(98.12f, 16.63f, 25.34f);
+	Coord* bdl = new Coord(98.12f, -23.37f, -1.02f);
+	Coord* bdr = new Coord(98.12f, 16.63f, -1.02f);
 
 	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
 
@@ -33,8 +33,8 @@ Graph* rrtStar(Coord homeCoord, Coord endCoord) {
 		// STILL NEED TO FINISH CHECKOBSTACLE
 		if (o.collisionCheck(nearest_node->coord, random_coord)) { // If obstacle is in between two nodes return true
 			std::cout << "collision here!\n";
-			nearest_node->printNode();
-			random_coord->printCoord();
+			//nearest_node->printNode();
+			//random_coord->printCoord();
 			delete random_coord;
 			continue;
 		}

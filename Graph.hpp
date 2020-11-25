@@ -17,9 +17,9 @@ struct Coord {
 
     Coord()
     {
-        x = float( (rand() % MAPSIZEX) - MAPSIZEX / 2 );
-        y = float( (rand() % MAPSIZEY) - MAPSIZEY / 2 );
-        z = float( (rand() % MAPSIZEZ));
+        x = float((rand() % MAPSIZEX) - abs(MAPMINX));
+        y = float((rand() % MAPSIZEY) - abs(MAPMINY));
+        z = float((rand() % MAPSIZEZ));
     }
 
     Coord(float x_new, float y_new, float z_new)
