@@ -1,11 +1,14 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+// WORLD SEED
+const int SEED = 69;
+
 //Size of search radius for nearest neighbors
-const int RADIUS=10;
+const int RADIUS=15;
 
 //Goal Radius
-const float GOALRADIUS = 10;
+const float GOALRADIUS = 30;
 
 //assume map is a cube for now, this will be changed later
 
@@ -24,8 +27,8 @@ const int MAPSIZEZ = abs(MAPMAXZ - MAPMINZ);
 
 
 //Number of Nodes to be created
-const int NUMNODES=4000;
-const float STEPSIZE=5.f;
+const int NUMNODES=100;
+const float STEPSIZE=10.f;
 
 //Number of meters per cell
 const int CELLSIZE=50;

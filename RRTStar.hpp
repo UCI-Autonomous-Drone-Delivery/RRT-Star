@@ -6,5 +6,6 @@
 
 
 Graph* rrtStar(Coord homeCoord, Coord endCoord);
+Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords);
 
 #endif

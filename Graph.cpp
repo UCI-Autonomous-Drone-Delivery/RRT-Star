@@ -3,31 +3,78 @@ using namespace std;
 
 // Constructor
 
-Graph::Graph(int total_nodes, Coord* coord)
-{
-	this->num_nodes = total_nodes + 1;
-	adj_list.resize(this->num_nodes);
-	//cout << adj_list.size() << endl;
-	Node* first_node = new Node(0,coord);
-	addNode(first_node);
 
+// Singluar Drone
+Graph::Graph(int total_nodes, Coord startCoord)
+{
+	this->num_nodes = total_nodes + 2;
+	adj_list.resize(this->num_nodes);
+	Node* start_node = new Node(0, startCoord);
+	addNode(start_node);
+
+	paths.resize(1);
+	std::stack<Node*> path;
+	paths.push_back(path);
+
+	found_path = new bool[1];
+
+	found_path[0] = false;
 	//create array of cells
-	for(int i=0;i<NUMCELLSX;i++) {
-		for(int j=0;j<NUMCELLSY;j++) {
-			for(int k=0;k<NUMCELLSZ;k++) {
-				//create cell and store in cells[i][j][k]
-				std::vector<Node*> newCell;
-				cells[i][j][k]=newCell;
-	
-			}
-		}
+	//for(int i=0;i<NUMCELLSX;i++) {
+	//	for(int j=0;j<NUMCELLSY;j++) {
+	//		for(int k=0;k<NUMCELLSZ;k++) {
+	//			//create cell and store in cells[i][j][k]
+	//			std::vector<Node*> newCell;
+	//			cells[i][j][k]=newCell;
+	//
+	//		}
+	//	}
+	//}
+};
+
+
+// Multiple Drones
+Graph::Graph(int total_nodes, std::vector<Coord> homeCoords)
+{
+	//cout << "Size of homeCoord: " << arrSize << endl;
+	// Create enough room for start + end + NUMNODES
+	int num_drones = homeCoords.size();
+	this->num_nodes = total_nodes + int(num_drones) * 2;
+	adj_list.resize(this->num_nodes);
+
+	// Set amount of paths corresponding to amount of drones
+	paths.resize(num_drones);
+	found_path = new bool[num_drones];
+	for (int i = 0; i < num_drones; i++) {
+		std:stack<Node*> path;
+		paths.push_back(path);
+
+		found_path[i] = false;
+
+		Node* start_node = new Node(i, homeCoords.at(i));
+		addNode(start_node);
 	}
+
+	// Cell optimization use later
+
+	////create array of cells
+	//for(int i=0;i<NUMCELLSX;i++) {
+	//	for(int j=0;j<NUMCELLSY;j++) {
+	//		for(int k=0;k<NUMCELLSZ;k++) {
+	//			//create cell and store in cells[i][j][k]
+	//			std::vector<Node*> newCell;
+	//			cells[i][j][k]=newCell;
+	//
+	//		}
+	//	}
+	//}
 };
 
 Graph::~Graph() {
 	for (auto& iter : adj_list) {
 		delete iter;
 	}
+	delete[] found_path;
 }
 
 std::vector<Node*> Graph::nearestNeighbors(Node* new_node, float r) {
@@ -76,7 +123,7 @@ Node* Graph::nearestNode(Coord* random_coord)
 // Utility Functions
 
 // Creates a new coordinate step size away from the selected Node
-Coord* Graph::stepNode(Coord* coord, Coord* random_coord, float step_size) 
+Coord Graph::stepNode(Coord* coord, Coord* random_coord, float step_size) 
 {
 	//Need to handle case when coord+step_size is greater than random point
 	float x_new, y_new, z_new, hypotonouse;
@@ -91,7 +138,7 @@ Coord* Graph::stepNode(Coord* coord, Coord* random_coord, float step_size)
 	if (random_coord->y < coord->y) { y_new = -y_new; }
 	if (random_coord->z < coord->z) { z_new = -z_new; }
 
-	Coord* newCoord = new Coord(coord->x + x_new, coord->y + y_new, coord->z + z_new);
+	Coord newCoord = Coord(coord->x + x_new, coord->y + y_new, coord->z + z_new);
 
 	return newCoord;
 }
@@ -154,8 +201,8 @@ void Graph::addToGraph(Node* node_src, Node* node_dest) {
 	addEdge(node_src, node_dest, cost);
 }
 
-void Graph::addNodeStack(Node* node) {
-	path.push(node);
+void Graph::addNodeStack(Node* node, int path_number) {
+	paths.at(path_number).push(node);
 }
 
 // Getter Functions
@@ -172,17 +219,33 @@ void Graph::addNodeStack(Node* node) {
 //	return cellCoord;
 //}
 
-void Graph::setPath() {
-	Node* curr = path.top()->parent;
-	while (curr) {
-		//std::cout << "Current Node is " << curr->node_number << endl;
-		path.push(curr);
-		curr = curr->parent;
-	}
+bool Graph::getFoundPath(int path_number) {
+	return found_path[path_number];
 }
 
-std::stack<Node*> Graph::getPath() {
-	return path;
+void Graph::setPath(int path_number) {
+	std::stack<Node*>* path = &paths.at(path_number);
+	path->top()->in_use = true;
+	Node* curr = path->top()->parent;
+	while (curr) {
+		std::cout << "Current Node is " << curr->node_number << endl;
+		curr->in_use = true;
+		path->push(curr);
+		curr = curr->parent;
+	}
+	found_path[path_number] = true;
+}
+
+int Graph::getNumNodes() {
+	return num_nodes;
+}
+
+std::vector<std::stack<Node*>> Graph::getPath() {
+	return paths;
+}
+
+std::stack<Node*> Graph::getPath(int path_number) {
+	return paths.at(path_number);
 }
 
 std::vector<Node*> Graph::getAdjList() {
@@ -206,18 +269,20 @@ void Graph::printGraph()
 	}
 }
 
-void Graph::printCellPop() {
-	for (int i = 0; i < NUMCELLSX; i++) {
-		for (int j = 0; j < NUMCELLSY; j++) {
-			for (int k = 0; k < NUMCELLSZ; k++) {
-				cout << "cell[" << i << "][" << j << "][" << k << "] population = " << cells[i][j][k].size() << "\n";
+//void Graph::printCellPop() {
+//	for (int i = 0; i < NUMCELLSX; i++) {
+//		for (int j = 0; j < NUMCELLSY; j++) {
+//			for (int k = 0; k < NUMCELLSZ; k++) {
+//				cout << "cell[" << i << "][" << j << "][" << k << "] population = " << cells[i][j][k].size() << "\n";
+//
+//			}
+//		}
+//	}
+//}
 
-			}
-		}
-	}
-}
-
-void Graph::printPath() {
+void Graph::printPath(int path_number) {
+	// Creates Copy doesn't modify original
+	std::stack<Node*> path = paths.at(path_number);
 	if (path.empty()) {
 		std::cout << "No path found!" << std::endl;
 		return;
@@ -225,10 +290,14 @@ void Graph::printPath() {
 
 	std::stack<Node*> temp = path;
 	float total_cost = 0;
-	std::cout << "Path is: ";
+	std::cout << "Path " << path_number + 1 << " is: ";
 	while (!temp.empty()) {
 		Node* current = temp.top();
 		std::cout << current->node_number << " ";
+		//if (current->in_use) {
+		//	std::cout << " In use: True";
+		//}
+		//std::cout << std::endl;
 		total_cost = current->weight;
 		temp.pop();
 	}
