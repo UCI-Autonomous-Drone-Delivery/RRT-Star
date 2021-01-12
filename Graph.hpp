@@ -39,11 +39,13 @@ struct Node {
     int node_number;
     float weight;
     bool visited;
+    bool in_use;
 
     Coord* coord;
-    Coord* cell_coord;
+    //Coord* cell_coord;
     Node* parent;
 
+    // in addnode resize vector to num_nodes so takes up so much memory I NEED TO CHANGE THIS
     std::vector<Node*> connectedNodes;  //previously node_list
     
     Node() // Base Constructor
@@ -54,26 +56,28 @@ struct Node {
         coord = new Coord();
         weight = 0; // Temp value
         visited = false;
+        in_use = false;
         parent = NULL;
 
-        cell_coord = NULL;
+        //cell_coord = NULL;
     }
 
-    Node(int node_num, Coord* new_coord) // Constructor for every other new point
+    Node(int node_num, Coord new_coord) // Constructor for every other new point
     {
         node_number = node_num;
         weight = 0; // Temp value
-        coord = new_coord;
+        coord = new Coord(new_coord.x, new_coord.y, new_coord.z);
         visited = false;
+        in_use = false;
         parent = NULL;
 
-        cell_coord = NULL;
+        //cell_coord = NULL;
     }
 
     ~Node()
     {
         delete coord;
-        delete cell_coord;
+        //delete cell_coord;
         parent = NULL;
     }
 
@@ -90,41 +94,46 @@ struct Node {
 
 class Graph {   
     int num_nodes; 
-    std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+    //std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
+    bool* found_path;
     std::vector <Node*> adj_list;
-    std::stack<Node*> path;
+    std::vector <std::stack<Node*>> paths;
     
 
 public:
-    Graph(int total_nodes, Coord* coord);
+    Graph(int total_nodes, Coord startCoord);
+    Graph(int total_nodes, std::vector<Coord> homeCoords);
     ~Graph();
 
     // Utility Functions
 
-    Coord* stepNode(Coord* coord, Coord* random_coord, float step_size);
+    Coord stepNode(Coord* coord, Coord* random_coord, float step_size);
     Node* nearestNode(Coord* random_coord);
     float findDistance(Coord* coord_src, Coord* coord_dest);
-    
     std::vector<Node*> nearestNeighbors(Node* new_node, float r);
+    bool allTrue();
     
     // Setter Functions
     void addEdge(Node* node_src, Node* node_dest, float weight);
     void removeEdge(Node* node_src, Node* node_dest);
     void addNode(Node* node);
     void addToGraph(Node* node_src, Node* node_dest);
-    void addNodeStack(Node* node);
+    void addNodeStack(Node* node, int path_number);
+    void setPath(int path_number);
+    void addToPath(std::stack<Node*> path, int path_number);
 
     // Getter Functions
     //Coord* getCellCoords(Node* node);
-    void setPath();
-    
+    int getNumNodes();
+    bool getFoundPath(int path_number);
+    std::vector<std::stack<Node*>> getPath();
+    std::stack<Node*> getPath(int path_number);
     std::vector<Node*> getAdjList();
-    std::stack<Node*> getPath();
 
     //Debugging Functions
-    void printCellPop();
+    //void printCellPop();
     void printGraph();
-    void printPath();
+    void printPath(int path_number);
 }; 
 
 #endif

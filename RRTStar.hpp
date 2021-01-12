@@ -5,6 +5,7 @@
 #include "Obstacles.hpp"
 
 
-Graph* rrtStar(Coord homeCoord, Coord endCoord);
+Graph* rrtStarOne(Coord homeCoord, Coord endCoord);
+Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords);
 
 #endif

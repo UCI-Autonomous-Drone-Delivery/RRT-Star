@@ -13,6 +13,104 @@ Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin,
 	numObstacles = 0;
 }
 
+void Obstacles::initObstacles() {
+	Coord* a = new Coord();
+	Coord* b = new Coord();
+	Coord* c = new Coord();
+	Coord* d = new Coord();
+	Coord* e = new Coord();
+	Coord* f = new Coord();
+	Coord* g = new Coord();
+	Coord* h = new Coord();
+
+	std::ifstream myReadFile;
+	myReadFile.open("RRT-Star/obstacles.txt");
+	std::string output;
+	int lineCounter = 0;
+	float x,y,z=0;
+	if (myReadFile.is_open()) {
+
+		while (!myReadFile.eof()) {
+			getline(myReadFile, output);
+
+			//skip first line
+			if (lineCounter == 0) {
+				lineCounter++;
+				continue;
+			}
+
+			int counter = 0;
+			int comma1;
+			for (int i = 0; i < output.size(); i++) {
+				if (output[i] == ',') {
+					if (counter == 0) {
+						x = stof(output.substr(0, i));
+						comma1 = i;
+						counter++;
+					}
+					else if (counter == 1) {
+						std::string letter = output.substr(comma1 + 1, i);
+						y = stof(letter);
+						z = stof(output.substr(i + 1, output.size()));
+						break;
+					}
+				}
+			}
+
+			int lineNum = (lineCounter - 1) % 9;
+			//skip/print obstacle titles
+			if (lineNum == 0) {
+				lineCounter++;
+				std::cout << "adding the obstacle:" << output << "\n";
+
+				continue;
+			}
+			else if (lineNum == 1) {
+				a = new Coord(x, y, z);
+				a->printCoord();
+
+			}
+			else if (lineNum == 2) {
+				b = new Coord(x, y, z);
+				b->printCoord();
+			}
+			else if (lineNum == 3) {
+				c = new Coord(x, y, z);
+				c->printCoord();
+			}
+			else if (lineNum == 4) {
+				d = new Coord(x, y, z);
+				d->printCoord();
+			}
+			else if (lineNum == 5) {
+				e = new Coord(x, y, z);
+				e->printCoord();
+			}
+			else if (lineNum == 6) {
+				f = new Coord(x, y, z);
+				f->printCoord();
+			}
+			else if (lineNum == 7) {
+				g = new Coord(x, y, z);
+				g->printCoord();
+			}
+			else if (lineNum == 8) {
+				h = new Coord(x, y, z);
+				h->printCoord();
+				try {
+					addObstacle(a, b, c, d, e, f, g, h);
+				}
+				catch (const std::exception e) {
+				}
+			}
+
+
+			lineCounter++;
+
+		}
+	}
+	myReadFile.close();
+}
 
 
 //Check the plane equations and make sure we're using the right vectors for each face. I haven't checked those yet
