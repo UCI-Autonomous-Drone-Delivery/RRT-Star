@@ -2,19 +2,18 @@
 #include "Graph.hpp"
 
 
-
-Graph* rrtStar(Coord homeCoord, Coord endCoord) {
+Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 	//Initializes obstacles here
-	Coord* ful = new Coord(50, 50, 75);
-	Coord* fur = new Coord(75, 50, 75);
-	Coord* fdl = new Coord(50, 50, 50);
-	Coord* fdr = new Coord(75, 50, 50);
-	Coord* bul = new Coord(50, 75, 75);
-	Coord* bur = new Coord(75, 75, 75);
-	Coord* bdl = new Coord(50, 75, 50);
-	Coord* bdr = new Coord(75, 75, 50);
+	//Coord* ful = new Coord(50, 50, 75);
+	//Coord* fur = new Coord(75, 50, 75);
+	//Coord* fdl = new Coord(50, 50, 50);
+	//Coord* fdr = new Coord(75, 50, 50);
+	//Coord* bul = new Coord(50, 75, 75);
+	//Coord* bur = new Coord(75, 75, 75);
+	//Coord* bdl = new Coord(50, 75, 50);
+	//Coord* bdr = new Coord(75, 75, 50);
 
-	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
+	//Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
 
 	// Creating the start of graph
 	Coord startingCoord = Coord(homeCoord.x, homeCoord.y, homeCoord.z);
@@ -43,6 +42,9 @@ Graph* rrtStar(Coord homeCoord, Coord endCoord) {
 
 		Node* new_node = new Node(i, step);
 		graph->addToGraph(nearest_node, new_node);
+		//if (i % 100 == 0) {
+			new_node->printNode();
+		//}
 		std::vector<Node*> neighbors = graph->nearestNeighbors(new_node, RADIUS);
 
 
@@ -102,23 +104,44 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 
 		Coord random_coord = Coord();	// Random Position
 		Node* nearest_node = graph->nearestNode(&random_coord); // Nearest Node from the random point
-		
-		// STILL NEED TO FINISH CHECKOBSTACLE
-		//if (o.collisionCheck(nearest_node->coord, &random_coord)) { // If obstacle is in between two nodes return true
-		//	std::cout << "collision here!\n";
-		//	nearest_node->printNode();
-		//	random_coord.printCoord();
-		//	continue;
-		//}
+		if (nearest_node->in_use) {
+			//std::cout << nearest_node->node_number << " is in Use" << std::endl;
+			continue;
+		}
 
 		// Creating coordinate and node step size away from the nearest coord
 		Coord step = graph->stepNode(nearest_node->coord, &random_coord, STEPSIZE);
+
+		//Checking if coord is in map Using obstacle checkMap() but not the function
+		if (step.x >= MAPMAXX - MINOBSTDIST || step.x < MAPMINX + MINOBSTDIST ||
+			step.y >= MAPMAXY - MINOBSTDIST || step.y < MAPMINY + MINOBSTDIST ||
+			step.z >= MAPMAXZ - MINOBSTDIST || step.z < MAPMINZ + MINOBSTDIST)
+		{
+			nearest_node->coord->printCoord();
+			step.printCoord();
+			std::cout << "Node out of bounds" << std::endl;
+			continue;
+		}
+		
+		// Random Coord is not a node but the coord that determines the direction the new node is made. Should we be checking nearest_node and the step_node????
+		if (o.collisionCheck(nearest_node->coord, &random_coord)) { // if obstacle is in between two nodes return true
+			std::cout << "collision here!\n";
+			nearest_node->printNode();
+			random_coord.printCoord();
+			continue;
+		}
+
+
 		if (graph->findDistance(nearest_node->coord, &step) > graph->findDistance(nearest_node->coord, &random_coord)) {
 			continue;
 		}
 
 		Node* new_node = new Node(i, step);
 		graph->addToGraph(nearest_node, new_node);
+		if (i % 100 == 0) {
+			new_node->printNode();
+		}
+		
 		std::vector<Node*> neighbors = graph->nearestNeighbors(new_node, RADIUS);
 
 
@@ -142,6 +165,7 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 		// IN USE NOT BEING CALLED HERE. DOUBLE CHECK IN_USE
 		for (int j = 0; j < endCoords.size(); j++) {  // PROBLEM
 			if (graph->getFoundPath(j)) {
+				//std::cout << "Found Path: " << j << std::endl;
 				continue;
 			}
 			Coord drone_end = endCoords.at(j);
@@ -149,16 +173,41 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 			float nodeDistanceFromGoal = graph->findDistance(new_node->coord, &drone_end);
 
 			if (nodeDistanceFromGoal < GOALRADIUS) {
+				//Check that path corresponds to correct drone
+				Node* curr = new_node->parent;
+				bool correct_drone = false;
+				while (curr) {
+					if (curr->node_number == j) {
+						correct_drone = true;
+						break;
+					}
+					curr = curr->parent;
+				}
+				if (!correct_drone) {
+					break;
+				}
+
+
 				std::cout << "Node that found Goal " << i+1 << ": " << new_node->node_number << std::endl;
-				Node* goal_node = new Node(i + 1, drone_end);
+				// doesn't check for obstacle :(
+				Node* goal_node = new Node(++i, drone_end);
+				goal_node->printNode();
 				goal_node->in_use = true;
 				graph->addToGraph(new_node, goal_node);
+
+				std::stack<Node*> path;
+				graph->addToPath(path, j);
+
 				graph->addNodeStack(goal_node, j);
 				graph->addNodeStack(new_node, j);
 				graph->setPath(j);
 				break;
 			}
 		}
+		if (graph->allTrue()) {
+			return graph;
+		}
+		// While i++
 		i++;
 	}
 	for (int i = 0; i < endCoords.size(); i++) {
