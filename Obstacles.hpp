@@ -9,6 +9,8 @@
 #include <cmath>
 #include <iostream>
 #include <assert.h>
+#include<fstream>
+#include <string>
 
 #include "Graph.hpp"
 
@@ -81,6 +83,7 @@ class Obstacles {
 	std::vector<Obstacle*> obstacleList;
 public:
 	Obstacles(float xMin,float xMax,float yMin, float yMax, float zMin, float zMax);
+	void initObstacles();
 	void addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Coord* f, Coord* g, Coord* h);
 	bool checkInMap(Coord* coord);
 	bool collisionCheck(Coord* A, Coord* B);
