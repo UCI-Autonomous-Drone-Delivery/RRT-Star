@@ -4,17 +4,9 @@
 
 Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 	//Initializes obstacles here
-	//Coord* ful = new Coord(50, 50, 75);
-	//Coord* fur = new Coord(75, 50, 75);
-	//Coord* fdl = new Coord(50, 50, 50);
-	//Coord* fdr = new Coord(75, 50, 50);
-	//Coord* bul = new Coord(50, 75, 75);
-	//Coord* bur = new Coord(75, 75, 75);
-	//Coord* bdl = new Coord(50, 75, 50);
-	//Coord* bdr = new Coord(75, 75, 50);
 
-	//Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
-
+	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
+	o.initObstacles();
 	// Creating the start of graph
 	Coord startingCoord = Coord(homeCoord.x, homeCoord.y, homeCoord.z);
 	Coord goalCoord = Coord(endCoord.x, endCoord.y, endCoord.z);
@@ -47,8 +39,7 @@ Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 		//}
 		std::vector<Node*> neighbors = graph->nearestNeighbors(new_node, RADIUS);
 
-
-		//// FOR RRT*
+		// FOR RRT*
 		for (auto& node_neighbor : neighbors) {
 			float cost_new = graph->findDistance(new_node->coord, node_neighbor->coord);
 			if (cost_new + node_neighbor->weight < new_node->weight) {
