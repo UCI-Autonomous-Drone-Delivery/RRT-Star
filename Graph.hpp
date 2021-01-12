@@ -45,6 +45,7 @@ struct Node {
     //Coord* cell_coord;
     Node* parent;
 
+    // in addnode resize vector to num_nodes so takes up so much memory I NEED TO CHANGE THIS
     std::vector<Node*> connectedNodes;  //previously node_list
     
     Node() // Base Constructor
@@ -109,8 +110,8 @@ public:
     Coord stepNode(Coord* coord, Coord* random_coord, float step_size);
     Node* nearestNode(Coord* random_coord);
     float findDistance(Coord* coord_src, Coord* coord_dest);
-    
     std::vector<Node*> nearestNeighbors(Node* new_node, float r);
+    bool allTrue();
     
     // Setter Functions
     void addEdge(Node* node_src, Node* node_dest, float weight);
@@ -119,6 +120,7 @@ public:
     void addToGraph(Node* node_src, Node* node_dest);
     void addNodeStack(Node* node, int path_number);
     void setPath(int path_number);
+    void addToPath(std::stack<Node*> path, int path_number);
 
     // Getter Functions
     //Coord* getCellCoords(Node* node);

@@ -38,16 +38,15 @@ Graph::Graph(int total_nodes, std::vector<Coord> homeCoords)
 {
 	//cout << "Size of homeCoord: " << arrSize << endl;
 	// Create enough room for start + end + NUMNODES
-	int num_drones = homeCoords.size();
-	this->num_nodes = total_nodes + int(num_drones) * 2;
+	this->num_nodes = total_nodes + NUMDRONES * 2;
 	adj_list.resize(this->num_nodes);
 
 	// Set amount of paths corresponding to amount of drones
-	paths.resize(num_drones);
-	found_path = new bool[num_drones];
-	for (int i = 0; i < num_drones; i++) {
-		std:stack<Node*> path;
-		paths.push_back(path);
+	paths.resize(NUMDRONES);
+	found_path = new bool[NUMDRONES];
+	for (int i = 0; i < NUMDRONES; i++) {
+		//std::stack<Node*> path;
+		//paths.push_back(path);
 
 		found_path[i] = false;
 
@@ -102,6 +101,15 @@ std::vector<Node*> Graph::nearestNeighbors(Node* new_node, float r) {
 	//}
 	//std::cout << "\n\n";
 	return neighbors;
+}
+
+bool Graph::allTrue() {
+	for (int i = 0; i < NUMDRONES; i++) {
+		if (!found_path[i]) {
+			return false;
+		}
+	}
+	return true;
 }
 
 Node* Graph::nearestNode(Coord* random_coord)
@@ -182,13 +190,12 @@ void Graph::removeEdge(Node* node_src, Node* node_dest) {
 
 void Graph::addNode(Node* node) {
 	adj_list[node->node_number] = node;		//add new node to adj list
-	node->connectedNodes.resize(this->num_nodes);
+	node->connectedNodes.resize(this->num_nodes); // GET RID OF THIS FIND BETTER WAY TO STORE AND ACCESS NODES
+
 	//cout << node->connectedNodes.size() << endl;
 	//get cell coordinates, add cell coords to node and add node to the appropriate cell
 	//Coord* cellCoord = getCellCoords(node);
 	//node->cell_coord = cellCoord;
-
-	node->printNode();
 
 	// This is crashing us when MAPSIZE >= 1000
 	//node->cell_coord->printCoord();
@@ -218,6 +225,10 @@ void Graph::addNodeStack(Node* node, int path_number) {
 //
 //	return cellCoord;
 //}
+
+void Graph::addToPath(std::stack<Node*> path, int path_number) {
+	paths.at(path_number) = path;
+}
 
 bool Graph::getFoundPath(int path_number) {
 	return found_path[path_number];
@@ -304,5 +315,7 @@ void Graph::printPath(int path_number) {
 	std::cout << std::endl;
 	std::cout << "Total cost: " << total_cost << std::endl;
 }
+
+
 
 // End Debug Functions
