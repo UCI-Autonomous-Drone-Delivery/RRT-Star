@@ -14,14 +14,14 @@ Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin,
 }
 
 void Obstacles::initObstacles() {
-	Coord* a;
-	Coord* b;
-	Coord* c;
-	Coord* d;
-	Coord* e;
-	Coord* f;
-	Coord* g;
-	Coord* h;
+	Coord* a = new Coord();
+	Coord* b = new Coord();
+	Coord* c = new Coord();
+	Coord* d = new Coord();
+	Coord* e = new Coord();
+	Coord* f = new Coord();
+	Coord* g = new Coord();
+	Coord* h = new Coord();
 
 	std::ifstream myReadFile;
 	myReadFile.open("RRT-Star/obstacles.txt");
@@ -49,7 +49,6 @@ void Obstacles::initObstacles() {
 						counter++;
 					}
 					else if (counter == 1) {
-						std::cout << "comma1:" << comma1 << ", i: " << i;
 						std::string letter = output.substr(comma1 + 1, i);
 						y = stof(letter);
 						z = stof(output.substr(i + 1, output.size()));
@@ -98,8 +97,11 @@ void Obstacles::initObstacles() {
 			else if (lineNum == 8) {
 				h = new Coord(x, y, z);
 				h->printCoord();
-
-				addObstacle(a, b, c, d, e, f, g, h);
+				try {
+					addObstacle(a, b, c, d, e, f, g, h);
+				}
+				catch (const std::exception e) {
+				}
 			}
 
 
