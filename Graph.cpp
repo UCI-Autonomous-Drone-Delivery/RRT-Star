@@ -5,53 +5,26 @@ using namespace std;
 
 
 // Singluar Drone
-Graph::Graph(int total_nodes, Coord startCoord)
+Graph::Graph(Coord startCoord, Coord endCoord)
 {
-	this->num_nodes = total_nodes + 2;
-	adj_list.resize(this->num_nodes);
-	Node* start_node = new Node(0, startCoord);
-	addNode(start_node);
-
-	paths.resize(1);
-	std::stack<Node*> path;
-	paths.push_back(path);
-
-	found_path = new bool[1];
-
-	found_path[0] = false;
-	//create array of cells
-	//for(int i=0;i<NUMCELLSX;i++) {
-	//	for(int j=0;j<NUMCELLSY;j++) {
-	//		for(int k=0;k<NUMCELLSZ;k++) {
-	//			//create cell and store in cells[i][j][k]
-	//			std::vector<Node*> newCell;
-	//			cells[i][j][k]=newCell;
-	//
-	//		}
-	//	}
-	//}
+	this->start_node = new Node(0, startCoord);
+	this->end_node = new Node(NUMNODES, endCoord);
+	adj_list.push_back(start_node);
 };
 
-
-// Multiple Drones
-Graph::Graph(int total_nodes, std::vector<Coord> homeCoords)
+Graph::Graph(std::vector<Coord> start_coords, std::vector<Coord> end_coords)
 {
-	//cout << "Size of homeCoord: " << arrSize << endl;
-	// Create enough room for start + end + NUMNODES
-	this->num_nodes = total_nodes + NUMDRONES * 2;
-	adj_list.resize(this->num_nodes);
-
-	// Set amount of paths corresponding to amount of drones
-	paths.resize(NUMDRONES);
 	found_path = new bool[NUMDRONES];
+	path_many.resize(NUMDRONES);
 	for (int i = 0; i < NUMDRONES; i++) {
-		//std::stack<Node*> path;
-		//paths.push_back(path);
-
 		found_path[i] = false;
 
-		Node* start_node = new Node(i, homeCoords.at(i));
-		addNode(start_node);
+		Node* start_node = new Node(i, start_coords.at(i));
+		Node* end_node = new Node(NUMNODES - (NUMDRONES - i), end_coords.at(i));
+
+		start_nodes.push_back(start_node);
+		end_nodes.push_back(end_node);
+		adj_list.push_back(start_node);
 	}
 
 	// Cell optimization use later
@@ -68,6 +41,8 @@ Graph::Graph(int total_nodes, std::vector<Coord> homeCoords)
 	//	}
 	//}
 };
+
+
 
 Graph::~Graph() {
 	for (auto& iter : adj_list) {
@@ -163,54 +138,69 @@ float Graph::findDistance(Coord* coord_src, Coord* coord_dest)
 	return total_distance;
 }
 
+bool Graph::inGoalRadiusSingle(Coord* node_coord) {
+	if (findDistance(node_coord, end_node->coord) < GOALRADIUS) {
+		return true;
+	}
+	else
+		return false;
+}
+
+bool Graph::inGoalRadiusMany(Coord* node_coord, int number) {
+	if (findDistance(node_coord, end_nodes.at(number)->coord) < GOALRADIUS) {
+		return true;
+	}
+	else
+		return false;
+}
+
+void Graph::generatePathSingle(Node* final_node) {
+	addToGraph(final_node, end_node);
+	path_single.push_back(end_node);
+	Node* node = final_node;
+	while (node->parent) {
+		path_single.push_back(node);
+		node = node->parent;
+	}
+	path_single.push_back(node);
+}
+
+void Graph::generatePathMany(Node* final_node, int number) {
+	addToGraph(final_node, end_nodes.at(number));
+	std::vector<Node*> path;
+	path.push_back(end_nodes.at(number));
+	Node* node = final_node;
+	while (node->parent) {
+		path.push_back(node);
+		node = node->parent;
+	}
+	path.push_back(node);
+
+	found_path[number] = true;
+	path_many.at(number) = path;
+}
 
 // Setter Functions
 
 void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 {
-	//update weight
 	float total_weight = weight + node_src->weight;
 	node_dest->weight = total_weight;
-	//std::cout << "Total weight from src: " << total_weight << endl;
-	//add node_dest to connectedNodes list of node_src
-	adj_list[node_src->node_number]->connectedNodes[node_dest->node_number] = node_dest;
 	node_dest->parent = node_src;
-	//std::cout << "Parent of " << node_dest->node_number << " is " << node_src->node_number << std::endl;
-
+	adj_list.push_back(node_dest);
 }
 
-void Graph::removeEdge(Node* node_src, Node* node_dest) {
-	assert(node_src);
-	assert(node_dest);
-	if (node_src && node_dest) {
-		adj_list[node_src->node_number]->connectedNodes[node_dest->node_number] = NULL;
-		//std::cout << "Removing Edge: " << node_src->node_number << "->" << node_dest->node_number << std::endl;
-	}
-}
-
-void Graph::addNode(Node* node) {
-	adj_list[node->node_number] = node;		//add new node to adj list
-	node->connectedNodes.resize(this->num_nodes); // GET RID OF THIS FIND BETTER WAY TO STORE AND ACCESS NODES
-
-	//cout << node->connectedNodes.size() << endl;
-	//get cell coordinates, add cell coords to node and add node to the appropriate cell
-	//Coord* cellCoord = getCellCoords(node);
-	//node->cell_coord = cellCoord;
-
-	// This is crashing us when MAPSIZE >= 1000
-	//node->cell_coord->printCoord();
-	//cells[(int)cellCoord->x][(int)cellCoord->y][(int)cellCoord->z].push_back(node);
+void Graph::rewireEdge(Node* node_src, Node* node_dest, float weight) {
+	float total_weight = weight + node_src->weight;
+	node_dest->weight = total_weight;
+	node_dest->parent = node_src;
 }
 
 void Graph::addToGraph(Node* node_src, Node* node_dest) {
 	float cost = findDistance(node_src->coord, node_dest->coord);
-	addNode(node_dest);
 	addEdge(node_src, node_dest, cost);
 }
 
-void Graph::addNodeStack(Node* node, int path_number) {
-	paths.at(path_number).push(node);
-}
 
 // Getter Functions
 
@@ -226,37 +216,17 @@ void Graph::addNodeStack(Node* node, int path_number) {
 //	return cellCoord;
 //}
 
-void Graph::addToPath(std::stack<Node*> path, int path_number) {
-	paths.at(path_number) = path;
-}
 
-bool Graph::getFoundPath(int path_number) {
+bool Graph::isPathFound(int path_number) {
 	return found_path[path_number];
-}
-
-void Graph::setPath(int path_number) {
-	std::stack<Node*>* path = &paths.at(path_number);
-	path->top()->in_use = true;
-	Node* curr = path->top()->parent;
-	while (curr) {
-		std::cout << "Current Node is " << curr->node_number << endl;
-		curr->in_use = true;
-		path->push(curr);
-		curr = curr->parent;
-	}
-	found_path[path_number] = true;
 }
 
 int Graph::getNumNodes() {
 	return num_nodes;
 }
 
-std::vector<std::stack<Node*>> Graph::getPath() {
-	return paths;
-}
-
-std::stack<Node*> Graph::getPath(int path_number) {
-	return paths.at(path_number);
+std::vector<Node*> Graph::getPath() {
+	return path_single;
 }
 
 std::vector<Node*> Graph::getAdjList() {
@@ -267,17 +237,19 @@ std::vector<Node*> Graph::getAdjList() {
 
 void Graph::printGraph()
 {
-	cout << "Size of Graph vector: " << adj_list.size() << endl;
-	cout << "Adjacency List" << endl;
-	for (auto& node : adj_list)
-	{
-		if (!node) { continue; }
-		for (auto& nodeChild : node->connectedNodes)
-		{
-			if (!nodeChild) { continue; }
-			cout << "(" << node->node_number << ", " << nodeChild->node_number << ", " << nodeChild->weight << ") " << endl;
-		}
-	}
+	cout << "Size of Tree: " << adj_list.size() << endl;
+	//cout << "Adjacency List" << endl;
+	//for (auto& node : adj_list)
+	//{
+	//	if (!node) { continue; }
+	//	cout << "(" << node->node_number << ", " << nodeChild->node_number << ", " << nodeChild->weight << ") " << endl;
+
+	//	//for (auto& nodeChild : node->connectedNodes)
+	//	//{
+	//	//	if (!nodeChild) { continue; }
+	//	//	cout << "(" << node->node_number << ", " << nodeChild->node_number << ", " << nodeChild->weight << ") " << endl;
+	//	//}
+	//}
 }
 
 //void Graph::printCellPop() {
@@ -291,29 +263,30 @@ void Graph::printGraph()
 //	}
 //}
 
-void Graph::printPath(int path_number) {
-	// Creates Copy doesn't modify original
-	std::stack<Node*> path = paths.at(path_number);
-	if (path.empty()) {
-		std::cout << "No path found!" << std::endl;
-		return;
-	}
 
-	std::stack<Node*> temp = path;
-	float total_cost = 0;
-	std::cout << "Path " << path_number + 1 << " is: ";
-	while (!temp.empty()) {
-		Node* current = temp.top();
-		std::cout << current->node_number << " ";
-		//if (current->in_use) {
-		//	std::cout << " In use: True";
-		//}
-		//std::cout << std::endl;
-		total_cost = current->weight;
-		temp.pop();
+void Graph::printPathSingle() {
+	for (auto& node : path_single) {
+		std::cout << node->node_number << " ";
 	}
 	std::cout << std::endl;
-	std::cout << "Total cost: " << total_cost << std::endl;
+	std::cout << "Total Cost: " << end_node->weight << std::endl;
+}
+
+void Graph::printPathMany() {
+	for (int i = 0; i < NUMDRONES; i++) {
+		std::vector<Node*> path = path_many.at(i);
+		std::cout << "Path " << i << ": ";
+		if (path.empty()) {
+			std::cout << "No path found :(" << std::endl;
+			continue;
+		}
+		for (auto& node : path) {
+			if (!node) { continue; }
+			std::cout << node->node_number << " ";
+		}
+		std::cout << std::endl;
+		std::cout << "Total Cost: " << end_nodes.at(i)->weight << std::endl;
+	}
 }
 
 

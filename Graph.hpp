@@ -35,6 +35,7 @@ struct Coord {
     }
 };
 
+
 struct Node {
     int node_number;
     float weight;
@@ -44,15 +45,10 @@ struct Node {
     Coord* coord;
     //Coord* cell_coord;
     Node* parent;
-
-    // in addnode resize vector to num_nodes so takes up so much memory I NEED TO CHANGE THIS
-    std::vector<Node*> connectedNodes;  //previously node_list
     
-    Node() // Base Constructor
+    Node()
     {
         node_number = 0;
-        // Temp random coord
-        
         coord = new Coord();
         weight = 0; // Temp value
         visited = false;
@@ -62,10 +58,10 @@ struct Node {
         //cell_coord = NULL;
     }
 
-    Node(int node_num, Coord new_coord) // Constructor for every other new point
+    Node(int node_num, Coord new_coord) 
     {
         node_number = node_num;
-        weight = 0; // Temp value
+        weight = 0;
         coord = new Coord(new_coord.x, new_coord.y, new_coord.z);
         visited = false;
         in_use = false;
@@ -94,46 +90,92 @@ struct Node {
 
 class Graph {   
     int num_nodes; 
-    //std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
     bool* found_path;
-    std::vector <Node*> adj_list;
-    std::vector <std::stack<Node*>> paths;
-    
 
+    // Single Query // RRT is a single query path planner
+    Node* start_node;
+    Node* end_node;
+
+    // Multi Query  // We might need to look into multi query algorithms eg. PRM
+                    // ours is idk what ours is lol right now
+    std::vector<Node*> start_nodes;
+    std::vector<Node*> end_nodes;
+
+    std::vector<Node*> adj_list;
+
+    std::vector<Node*> path_single;
+    std::vector<std::vector<Node*>> path_many;
+    // For if we return to cells
+    //std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
 public:
-    Graph(int total_nodes, Coord startCoord);
-    Graph(int total_nodes, std::vector<Coord> homeCoords);
+    Graph(Coord start, Coord end);
+    Graph(std::vector<Coord>start_coords, std::vector<Coord> end_coords);
     ~Graph();
 
-    // Utility Functions
+    /**********************************/
+    /**********************************/
 
-    Coord stepNode(Coord* coord, Coord* random_coord, float step_size);
-    Node* nearestNode(Coord* random_coord);
+    /* Utility Functions */
+
+    // Finds distance between two nodes
     float findDistance(Coord* coord_src, Coord* coord_dest);
-    std::vector<Node*> nearestNeighbors(Node* new_node, float r);
-    bool allTrue();
+
+    // Returns Coord stepsize away from nearest_node coord
+    Coord stepNode(Coord* coord, Coord* random_coord, float step_size);
+
+    // Finds node closest to the coord
+    Node* nearestNode(Coord* random_coord);
     
-    // Setter Functions
+    // Returns vector of nodes closest to node in radius r
+    std::vector<Node*> nearestNeighbors(Node* new_node, float r);
+
+    // Returns true if all paths are found
+    bool allTrue();
+
+    // Returns true if coord is in goal radius
+    bool inGoalRadiusSingle(Coord* node_coord);
+    bool inGoalRadiusMany(Coord* node_coord, int number);
+
+    // Generates final path if path is found
+    void generatePathSingle(Node* final_node);
+    void generatePathMany(Node* final_node, int number);
+
+    /**********************************/
+    /**********************************/
+
+    /* Tree functions */
+
+    // Connect two nodes together
     void addEdge(Node* node_src, Node* node_dest, float weight);
-    void removeEdge(Node* node_src, Node* node_dest);
-    void addNode(Node* node);
+
+    // Rewire node to new parent
+    void rewireEdge(Node* node_src, Node* node_dest, float weight);
+
+    // Calls addEdge and adds distance between two nodes to the total weight
     void addToGraph(Node* node_src, Node* node_dest);
-    void addNodeStack(Node* node, int path_number);
-    void setPath(int path_number);
-    void addToPath(std::stack<Node*> path, int path_number);
+
+    /**********************************/
+    /**********************************/
 
     // Getter Functions
-    //Coord* getCellCoords(Node* node);
+    
+    // Returns path found if a path is found
+    std::vector<Node*> getPath();
     int getNumNodes();
-    bool getFoundPath(int path_number);
-    std::vector<std::stack<Node*>> getPath();
-    std::stack<Node*> getPath(int path_number);
+    bool isPathFound(int path_number);
     std::vector<Node*> getAdjList();
 
+    //Coord* getCellCoords(Node* node);
+
+    /**********************************/
+    /**********************************/
+
     //Debugging Functions
-    //void printCellPop();
+    
     void printGraph();
-    void printPath(int path_number);
+    void printPathSingle();
+    void printPathMany();
+    //void printCellPop();
 }; 
 
 #endif

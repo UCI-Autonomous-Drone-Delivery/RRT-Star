@@ -12,53 +12,48 @@
 #endif
 
 
-void testMany() {
-	std::vector<Coord> startCoords;
-	std::vector<Coord> goalCoords;
-	Coord startCoord = Coord(-140, -140, 10);		
-	Coord goalCoord = Coord(140, -140, 10); 
-	startCoords.push_back(startCoord);
-	goalCoords.push_back(goalCoord);
+void manyRRT() {
+    std::vector<Coord> start_coords;
+    std::vector<Coord> goal_coords;
 
-	//startCoord = Coord(100.f, -100.f, 10);
-	//goalCoord = Coord(-100.f, 100.f, 10);
-	//startCoords.push_back(startCoord);
-	//goalCoords.push_back(goalCoord);
+    Coord start_coord = Coord(-140, -140, 10);
+    Coord goal_coord = Coord(140, -140, 10);
+    start_coords.push_back(start_coord);
+    goal_coords.push_back(goal_coord);
 
-	startCoord = Coord(140, 140, 10);
-	goalCoord = Coord(-140, 140, 10);
-	startCoords.push_back(startCoord);
-	goalCoords.push_back(goalCoord);
+    //startCoord = Coord(100.f, -100.f, 10);
+    //goalCoord = Coord(-100.f, 100.f, 10);
+    //startCoords.push_back(startCoord);
+    //goalCoords.push_back(goalCoord);
 
-	//for (int i = 0; i < NUMDRONES; i++) {
-	//	float offset = i * 10;
-	//	Coord startCoord = Coord(-100.f + offset, -100.f, 10);				
-	//	Coord goalCoord = Coord(100.f + offset, -100.f, 10); 
-	//	startCoords.push_back(startCoord);
-	//	goalCoords.push_back(goalCoord);
-	//}
+    start_coord = Coord(140, 140, 10);
+    goal_coord = Coord(-140, 140, 10);
+    start_coords.push_back(start_coord);
+    goal_coords.push_back(goal_coord);
 
-	Graph* graph = rrtStar(startCoords, goalCoords);
-	if (graph) {
-		//graph->printGraph();
-		for (int i = 0; i < NUMDRONES; i++) {
-			graph->printPath(i);
-		}
-	}
-	// If we want to save graph we don't delete and write it to file LATER
-	delete graph;
+    Graph* rrtTree = rrtStarMany(start_coords, goal_coords);
+    if (rrtTree) {
+        rrtTree->printPathMany();
+        rrtTree->printGraph();
+    }
+    else {
+        std::cout << "No paths found :(" << std::endl;
+    }
+    delete rrtTree;
 }
 
-void testSingle() {
-	Coord startCoord = Coord(0, 0, 0);
-	Coord goalCoord = Coord(23.12f, -45.37f, 23.5f);
-
-	Graph* graph = rrtStarOne(startCoord, goalCoord);
-	if (graph) {
-		graph->printGraph();
-		graph->printPath(0);
+void singleRRT() {
+	Coord start = Coord(-110, 130, 10);
+	Coord end = Coord(110, -130, 10);
+	Graph* rrtTree = rrtStarSingle(start, end);
+	if (rrtTree) {
+		rrtTree->printPathSingle();
+		rrtTree->printGraph();
 	}
-	delete graph;
+	else {
+		std::cout << "No paths found :(" << std::endl;
+	}
+    delete rrtTree;
 }
 
 int main()
@@ -66,8 +61,8 @@ int main()
 	//srand((unsigned)time(NULL));
 	srand(SEED);
 
-	testMany();
-	//testSingle();
+    singleRRT();
+    //manyRRT();
 
 	_CrtDumpMemoryLeaks();
 	return 0;

@@ -14,7 +14,7 @@ const int RADIUS = 40;
 const float GOALRADIUS = 50.f;
 
 //Number of Nodes to be created
-const int NUMNODES = 12000;
+const int NUMNODES = 10000;
 const float STEPSIZE = 5; // Remember to set stepsize corresponding to how big the map is
 
 //assume map is a cube for now, this will be changed later

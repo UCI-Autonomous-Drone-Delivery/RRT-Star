@@ -2,17 +2,13 @@
 #include "Graph.hpp"
 
 
-Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
+Graph* rrtStarSingle(Coord homeCoord, Coord endCoord) {
 	//Initializes obstacles here
 
 
 	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
 	o.initObstacles();
-	// Creating the start of graph
-	Coord startingCoord = Coord(homeCoord.x, homeCoord.y, homeCoord.z);
-	Coord goalCoord = Coord(endCoord.x, endCoord.y, endCoord.z);
-	Graph* graph = new Graph(NUMNODES, startingCoord);
-
+	Graph* graph = new Graph(homeCoord, endCoord);
 	int i = 1;
 	while (i < NUMNODES + 1) {
 
@@ -21,24 +17,26 @@ Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 
 		// STILL NEED TO FINISH CHECKOBSTACLE
 
-		if (o.collisionCheck(nearest_node->coord, random_coord)) { // If obstacle is in between two nodes return true
+		if (o.collisionCheck(nearest_node->coord, &random_coord)) { // If obstacle is in between two nodes return true
 			std::cout << "collision here!\n";
-			//nearest_node->printNode();
-			//random_coord->printCoord();
-			delete random_coord;
+			nearest_node->printNode();
+			random_coord.printCoord();
 			continue;
 		}
-
-		//if (o.collisionCheck(nearest_node->coord, &random_coord)) { // If obstacle is in between two nodes return true
-		//	std::cout << "collision here!\n";
-		//	nearest_node->printNode();
-		//	random_coord.printCoord();
-		//	continue;
-		//}
 
 
 		// Creating coordinate and node step size away from the nearest coord
 		Coord step = graph->stepNode(nearest_node->coord, &random_coord, STEPSIZE);
+		//Checking if coord is in map Using obstacle checkMap() but not the function
+		if (step.x >= MAPMAXX - MINOBSTDIST || step.x < MAPMINX + MINOBSTDIST ||
+			step.y >= MAPMAXY - MINOBSTDIST || step.y < MAPMINY + MINOBSTDIST ||
+			step.z >= MAPMAXZ - MINOBSTDIST || step.z < MAPMINZ + MINOBSTDIST)
+		{
+			nearest_node->coord->printCoord();
+			step.printCoord();
+			std::cout << "Node out of bounds" << std::endl;
+			continue;
+		}
 		if (graph->findDistance(nearest_node->coord, &step) > graph->findDistance(nearest_node->coord, &random_coord)) {
 			continue;
 		}
@@ -54,8 +52,7 @@ Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 		for (auto& node_neighbor : neighbors) {
 			float cost_new = graph->findDistance(new_node->coord, node_neighbor->coord);
 			if (cost_new + node_neighbor->weight < new_node->weight) {
-				graph->removeEdge(new_node->parent, new_node);
-				graph->addEdge(
+				graph->rewireEdge(
 					node_neighbor,
 					new_node,
 					cost_new
@@ -64,14 +61,9 @@ Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 		}
 
 		// Check if node found goal
-		float nodeDistanceFromGoal = graph->findDistance(new_node->coord, &goalCoord);
-		if (nodeDistanceFromGoal < GOALRADIUS) {
-			std::cout << "Node that found Goal: " << new_node->node_number << std::endl;
-			Node* goal_node = new Node(i + 1, goalCoord);
-			graph->addToGraph(new_node, goal_node);
-			graph->addNodeStack(goal_node, 0);
-			graph->addNodeStack(new_node, 0);
-			graph->setPath(0);
+		if (graph->inGoalRadiusSingle(new_node->coord)) {
+			//std::cout << "Node that found Goal: " << new_node->node_number << std::endl;
+			graph->generatePathSingle(new_node);
 			return graph;
 		}
 		i++;
@@ -83,7 +75,7 @@ Graph* rrtStarOne(Coord homeCoord, Coord endCoord) {
 	return NULL;
 }
 
-Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
+Graph* rrtStarMany(std::vector<Coord> start_coords, std::vector<Coord> end_coords) {
 
 	Coord* ful = new Coord(50, 50, 75);
 	Coord* fur = new Coord(75, 50, 75);
@@ -97,12 +89,12 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 	Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
 
 	// Creating the start of graph
-	Graph* graph = new Graph(NUMNODES, homeCoords);
+	Graph* graph = new Graph(start_coords, end_coords);
 
 	// Start at ith number after initializing start nodes
 	// Only create NUMNODES nodes
-	int i = int(homeCoords.size());
-	while (i < NUMNODES + homeCoords.size()) {
+	int i = int(NUMDRONES);
+	while (i < NUMNODES + NUMDRONES) {
 
 		Coord random_coord = Coord();	// Random Position
 		Node* nearest_node = graph->nearestNode(&random_coord); // Nearest Node from the random point
@@ -143,19 +135,16 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 		if (i % 100 == 0) {
 			new_node->printNode();
 		}
-		
+
+		// FOR RRT*
 		std::vector<Node*> neighbors = graph->nearestNeighbors(new_node, RADIUS);
-
-
-		//// FOR RRT*
 		for (auto& node_neighbor : neighbors) {
 			if (node_neighbor->in_use) {
 				continue;
 			}
 			float cost_new = graph->findDistance(new_node->coord, node_neighbor->coord);
 			if (cost_new + node_neighbor->weight < new_node->weight) {
-				graph->removeEdge(new_node->parent, new_node);
-				graph->addEdge(
+				graph->rewireEdge(
 					node_neighbor,
 					new_node,
 					cost_new
@@ -165,16 +154,13 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 
 		// Check if node found goal
 		// IN USE NOT BEING CALLED HERE. DOUBLE CHECK IN_USE
-		for (int j = 0; j < endCoords.size(); j++) {  // PROBLEM
-			if (graph->getFoundPath(j)) {
+		for (int j = 0; j < NUMDRONES; j++) {  // PROBLEM
+			if (graph->isPathFound(j)) {
 				//std::cout << "Found Path: " << j << std::endl;
 				continue;
 			}
-			Coord drone_end = endCoords.at(j);
-
-			float nodeDistanceFromGoal = graph->findDistance(new_node->coord, &drone_end);
-
-			if (nodeDistanceFromGoal < GOALRADIUS) {
+			// Check if node found goal
+			if (graph->inGoalRadiusMany(new_node->coord, j)) {
 				//Check that path corresponds to correct drone
 				Node* curr = new_node->parent;
 				bool correct_drone = false;
@@ -188,23 +174,10 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 				if (!correct_drone) {
 					break;
 				}
-
-
-				std::cout << "Node that found Goal " << i+1 << ": " << new_node->node_number << std::endl;
-				// doesn't check for obstacle :(
-				Node* goal_node = new Node(++i, drone_end);
-				goal_node->printNode();
-				goal_node->in_use = true;
-				graph->addToGraph(new_node, goal_node);
-
-				std::stack<Node*> path;
-				graph->addToPath(path, j);
-
-				graph->addNodeStack(goal_node, j);
-				graph->addNodeStack(new_node, j);
-				graph->setPath(j);
+				//std::cout << "Node that found Goal: " << new_node->node_number << std::endl;
+				graph->generatePathMany(new_node, j);
 				break;
-			}
+			}	
 		}
 		if (graph->allTrue()) {
 			return graph;
@@ -212,8 +185,8 @@ Graph* rrtStar(std::vector<Coord> homeCoords, std::vector<Coord> endCoords) {
 		// While i++
 		i++;
 	}
-	for (int i = 0; i < endCoords.size(); i++) {
-		if (graph->getFoundPath(i)) {
+	for (int i = 0; i < NUMDRONES; i++) {
+		if (graph->isPathFound(i)) {
 			std::cout << "Goal " << i + 1 << " was found!" << std::endl;
 		}
 		else {
