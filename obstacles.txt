@@ -1,19 +1,10 @@
 //This line is ignored. The format is as follows: starting from next line, add a title. then on next 8 lines, add corners of obstacles in following order: ful, fur, fdl, fdr, bul, bur, bdl, bdr. separate xyz values with commas (no spaces)
 block in front of drone
-50,50,75
-75,50,75
-50,50,50
-75,50,50
-50,75,75
-75,75,75
-50,75,50
-75,75,50
-this is a second obstacle
-1,2,3
-2,2,3
-3,2,3
-4,2,3
-5,2,3
-5,2,3
-7,2,3
-8,2,3
+-50,-150,200
+50,-150,200
+-50,-150,0
+50,-150,0
+-50,150,200
+50,150,200
+-50,150,0
+50,150,0

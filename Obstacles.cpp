@@ -184,10 +184,10 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	zo = fdl->z;
 
 	//line1 eqn (fdl -> bdl)
-	directVect1 = new Coord(bdl->x - fdl->x, bdl->y - fdl->y, bdl->z - fdl->z);
+	directVect2 = new Coord(bdl->x - fdl->x, bdl->y - fdl->y, bdl->z - fdl->z);
 
 	//line5 eqn (fdl -> ful)
-	directVect2 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
+	directVect1 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
 
 	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
 	a1 = face->x;
@@ -205,10 +205,10 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	zo = fdr->z;
 
 	//line1 eqn (fdr -> bdr)
-	directVect2 = new Coord(bdr->x - fdr->x, bdr->y - fdr->y, bdr->z - fdr->z);
+	directVect1 = new Coord(bdr->x - fdr->x, bdr->y - fdr->y, bdr->z - fdr->z);
 
 	//line2 eqn (fdr -> fur)
-	directVect1 = new Coord(fur->x - fdr->x, fur->y - fdr->y, fur->z - fdr->z);
+	directVect2 = new Coord(fur->x - fdr->x, fur->y - fdr->y, fur->z - fdr->z);
 
 	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
 	a1 = face->x;
@@ -225,10 +225,10 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	zo = fdl->z;
 
 	//line1 eqn (fdl -> fdr)
-	directVect2 = new Coord(fdr->x - fdl->x, fdr->y - fdl->y, fdr->z - fdl->z);
+	directVect1 = new Coord(fdr->x - fdl->x, fdr->y - fdl->y, fdr->z - fdl->z);
 
 	//line2 eqn (fdl -> ful)
-	directVect1 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
+	directVect2 = new Coord(ful->x - fdl->x, ful->y - fdl->y, ful->z - fdl->z);
 
 	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
 	a1 = face->x;
@@ -246,10 +246,10 @@ void Obstacles::addObstacle(Coord* a, Coord* b, Coord* c, Coord* d, Coord* e, Co
 	zo = bdl->z;
 
 	//line1 eqn (bdl -> bdr)
-	directVect1 = new Coord(bdr->x - bdl->x, bdr->y - bdl->y, bdr->z - bdl->z);
+	directVect2 = new Coord(bdr->x - bdl->x, bdr->y - bdl->y, bdr->z - bdl->z);
 
 	//line2 eqn (bdl -> bul)
-	directVect2 = new Coord(bul->x - bdl->x, bul->y - bdl->y, bul->z - bdl->z);
+	directVect1 = new Coord(bul->x - bdl->x, bul->y - bdl->y, bul->z - bdl->z);
 
 	face = crossProduct(directVect1, directVect2);	//creates normal vector of two vectors
 	a1 = face->x;
@@ -329,15 +329,18 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 		return true;
 	}
 
-	
-	
+
+
 	//loop through obstacles
 	for (int i = 0; i < numObstacles; i++) {
 
 		//check if the obstacle is between A and B inclusive
 		Obstacle* ob = obstacleList.at(i);
-		status = checkObstacleInt(A,B,ob);
-		if(status == true) {
+		status = checkObstacleInt(A, B, ob);
+		if (checkBox(B, ob)) {
+			return true;
+		}
+		if (status == true) {
 			return true;
 		}
 	}
@@ -345,12 +348,27 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 	return false;
 }
 
+bool Obstacles::checkBox(Coord* node_to_check, Obstacle* ob) {
+	//Check if coord is inbetween these x, y, z values
+	// fdl <= x,y,z <= bur
+	// if true node is inside box
+	// else node is not inside box
+	if (ob->fdl->x <= node_to_check->x && node_to_check->x <= ob->bur->x &&
+		ob->fdl->y <= node_to_check->y && node_to_check->y <= ob->bur->y &&
+		ob->fdl->z <= node_to_check->z && node_to_check->z <= ob->bur->z) {
+		std::cout << "Node is in box " << std::endl;
+		node_to_check->printCoord();
+		return true;
+	}
+	else { return false; }
+}
 
-//creates a plane equation and finds point of intersection
+
+//creates a plane equation and finds point of intersection (if A and B are on different sides of the plane, the if should be negative)
 bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 	bool result;
 	std::cout<< "UPFACE " << ((ob->pUp->a * A->x) + (ob->pUp->b * A->y) + (ob->pUp->c * A->z) - ob->pUp->d) * ((ob->pUp->a * B->x) + (ob->pUp->b * B->y) + (ob->pUp->c * B->z) - ob->pUp->d) << "\n";
-	if (((ob->pUp->a * A->x) + (ob->pUp->b * A->y) + (ob->pUp->c * A->z) - ob->pUp->d) * ((ob->pUp->a * B->x) + (ob->pUp->b * B->y) + (ob->pUp->c * B->z) - ob->pUp->d) < 0.0f) {
+	if (((ob->pUp->a * A->x) + (ob->pUp->b * A->y) + (ob->pUp->c * A->z) - ob->pUp->d) * ((ob->pUp->a * B->x) + (ob->pUp->b * B->y) + (ob->pUp->c * B->z) - ob->pUp->d) <= 0.0f) {
 	
 		result = pointInPlane(A, B, ob->pUp);
 		if (result == true) {
@@ -361,7 +379,7 @@ bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 	}
 	std::cout << "downFACE " << ((ob->pDown->a * A->x) + (ob->pDown->b * A->y) + (ob->pDown->c * A->z) - ob->pDown->d) * ((ob->pDown->a * B->x) + (ob->pDown->b * B->y) + (ob->pDown->c * B->z) - ob->pDown->d) << "\n";
 
-	if (((ob->pDown->a * A->x) + (ob->pDown->b * A->y) + (ob->pDown->c * A->z) - ob->pDown->d) * ((ob->pDown->a * B->x) + (ob->pDown->b * B->y) + (ob->pDown->c * B->z) - ob->pDown->d) < 0.0f) {
+	if (((ob->pDown->a * A->x) + (ob->pDown->b * A->y) + (ob->pDown->c * A->z) - ob->pDown->d) * ((ob->pDown->a * B->x) + (ob->pDown->b * B->y) + (ob->pDown->c * B->z) - ob->pDown->d) <= 0.0f) {
 
 		result = pointInPlane(A, B, ob->pDown);
 		if (result == true) {
@@ -372,7 +390,7 @@ bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 	}
 	std::cout << "leftFACE " << ((ob->pLeft->a * A->x) + (ob->pLeft->b * A->y) + (ob->pLeft->c * A->z) - ob->pLeft->d) * ((ob->pLeft->a * B->x) + (ob->pLeft->b * B->y) + (ob->pLeft->c * B->z) - ob->pLeft->d) << "\n";
 
-	if (((ob->pLeft->a * A->x) + (ob->pLeft->b * A->y) + (ob->pLeft->c * A->z) - ob->pLeft->d) * ((ob->pLeft->a * B->x) + (ob->pLeft->b * B->y) + (ob->pLeft->c * B->z) - ob->pLeft->d) < 0.0f) {
+	if (((ob->pLeft->a * A->x) + (ob->pLeft->b * A->y) + (ob->pLeft->c * A->z) - ob->pLeft->d) * ((ob->pLeft->a * B->x) + (ob->pLeft->b * B->y) + (ob->pLeft->c * B->z) - ob->pLeft->d) <= 0.0f) {
 
 		result = pointInPlane(A, B, ob->pLeft);
 		if (result == true) {
@@ -384,7 +402,7 @@ bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 
 	std::cout << "rightFACE " << ((ob->pRight->a * A->x) + (ob->pRight->b * A->y) + (ob->pRight->c * A->z) - ob->pRight->d) * ((ob->pRight->a * B->x) + (ob->pRight->b * B->y) + (ob->pRight->c * B->z) - ob->pRight->d) << "\n";
 
-	if (((ob->pRight->a * A->x) + (ob->pRight->b * A->y) + (ob->pRight->c * A->z) - ob->pRight->d) * ((ob->pRight->a * B->x) + (ob->pRight->b * B->y) + (ob->pRight->c * B->z) - ob->pRight->d) < 0.0f) {
+	if (((ob->pRight->a * A->x) + (ob->pRight->b * A->y) + (ob->pRight->c * A->z) - ob->pRight->d) * ((ob->pRight->a * B->x) + (ob->pRight->b * B->y) + (ob->pRight->c * B->z) - ob->pRight->d) <= 0.0f) {
 		result = pointInPlane(A, B, ob->pRight);
 		if (result == true) {
 			std::cout << "true4";
@@ -396,7 +414,7 @@ bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 
 	std::cout << "frontFACE " << ((ob->pFront->a * A->x) + (ob->pFront->b * A->y) + (ob->pFront->c * A->z) - ob->pFront->d) * ((ob->pFront->a * B->x) + (ob->pFront->b * B->y) + (ob->pFront->c * B->z) - ob->pFront->d)  << "\n";
 
-	if (((ob->pFront->a * A->x) + (ob->pFront->b * A->y) + (ob->pFront->c * A->z) - ob->pFront->d) * ((ob->pFront->a * B->x) + (ob->pFront->b * B->y) + (ob->pFront->c * B->z) - ob->pFront->d) < 0.0f) {
+	if (((ob->pFront->a * A->x) + (ob->pFront->b * A->y) + (ob->pFront->c * A->z) - ob->pFront->d) * ((ob->pFront->a * B->x) + (ob->pFront->b * B->y) + (ob->pFront->c * B->z) - ob->pFront->d) <= 0.0f) {
 		result = pointInPlane(A, B, ob->pFront);
 		if (result == true) {
 			std::cout << "true5";
@@ -407,7 +425,7 @@ bool Obstacles::checkObstacleInt(Coord* A, Coord* B, Obstacle* ob) {
 
 	std::cout << "backFACE " << ((ob->pBack->a * A->x) + (ob->pBack->b * A->y) + (ob->pBack->c * A->z) - ob->pBack->d) * ((ob->pBack->a * B->x) + (ob->pBack->b * B->y) + (ob->pBack->c * B->z) - ob->pBack->d) << "\n";
 
-	if (((ob->pBack->a * A->x) + (ob->pBack->b * A->y) + (ob->pBack->c * A->z) - ob->pBack->d) * ((ob->pBack->a * B->x) + (ob->pBack->b * B->y) + (ob->pBack->c * B->z) - ob->pBack->d) < 0.0f) {
+	if (((ob->pBack->a * A->x) + (ob->pBack->b * A->y) + (ob->pBack->c * A->z) - ob->pBack->d) * ((ob->pBack->a * B->x) + (ob->pBack->b * B->y) + (ob->pBack->c * B->z) - ob->pBack->d) <= 0.0f) {
 		result = pointInPlane(A, B, ob->pBack);
 		if (result == true) {
 			std::cout << "true6";
@@ -471,24 +489,24 @@ bool Obstacles::pointInPlane(Coord* A, Coord* B, Plane* plane) {
 	//check if our point of intersection p is on the inside of all surrounding planes
 	if ((plane->side1->a * p->x) + (plane->side1->b * p->y) + (plane->side1->c * p->z) - plane->side1->d < 0) {
 		std::cout << "here1\n";
-		return false;
+		return true;
 	}
 	if ((plane->side2->a * p->x) + (plane->side2->b * p->y) + (plane->side2->c * p->z) - plane->side2->d < 0) {
 	std::cout << "here2\n";
 
-		return false;
+		return true;
 	}
 	if ((plane->side3->a * p->x) + (plane->side3->b * p->y) + (plane->side3->c * p->z) - plane->side3->d < 0) {
 	std::cout << "here3\n";
-		return false;
+		return true;
 
 	}
 	if ((plane->side4->a * p->x) + (plane->side4->b * p->y) + (plane->side4->c * p->z) - plane->side4->d < 0) {
 	std::cout << "here4\n";
 
-		return false;
+		return true;
 	}
 
 	std::cout << "there is an intersection in this face\n";
-	return true;
+	return false;
 }

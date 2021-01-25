@@ -90,6 +90,7 @@ public:
 	Coord* crossProduct(Coord* A, Coord* B);
 	bool checkObstacleInt(Coord* A, Coord* B, Obstacle* ob);
 	bool pointInPlane(Coord* A, Coord* B, Plane* plane);
+	bool checkBox(Coord* node_to_check, Obstacle* ob);
 
 };
 
