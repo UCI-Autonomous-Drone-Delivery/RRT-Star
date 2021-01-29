@@ -1,16 +1,28 @@
+#define _HAS_STD_BYTE 0
+#define _USE_MATH_DEFINES
+
+#include <matplot/matplot.h>
+#include <cmath>
 #include "RRTStar.hpp"
-#include "Graph.hpp"
-// Memory Leak Check
-#include <crtdbg.h>
 
-#ifdef _DEBUG
-#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
-// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
-// allocations to be of _CLIENT_BLOCK type
-#else
-#define DBG_NEW new
-#endif
 
+namespace plt = matplot;
+
+Graph* singleRRT() {
+    Coord start = Coord(-110, 130, 10);
+    Coord end = Coord(110, -130, 10);
+    Graph* rrtTree = rrtStarSingle(start, end);
+    if (rrtTree) {
+        rrtTree->printPathSingle();
+        //rrtTree->printGraph();
+        return rrtTree;
+    }
+    else {
+        std::cout << "No paths found :(" << std::endl;
+        return NULL;
+    }
+
+}
 
 void manyRRT() {
     std::vector<Coord> start_coords;
@@ -39,31 +51,50 @@ void manyRRT() {
     else {
         std::cout << "No paths found :(" << std::endl;
     }
-    delete rrtTree;
-}
-
-void singleRRT() {
-	Coord start = Coord(-110, 130, 10);
-	Coord end = Coord(110, -130, 10);
-	Graph* rrtTree = rrtStarSingle(start, end);
-	if (rrtTree) {
-		rrtTree->printPathSingle();
-		rrtTree->printGraph();
-	}
-	else {
-		std::cout << "No paths found :(" << std::endl;
-	}
-    delete rrtTree;
 }
 
 int main()
 {
-	//srand((unsigned)time(NULL));
-	srand(SEED);
+    srand(SEED);
+    plt::xlim({ MAPMINX, MAPMAXX });
+    plt::ylim({ MAPMINY, MAPMAXY });
+    plt::zlim({ MAPMINZ, MAPMAXZ });
+    plt::xlabel("x");
+    plt::ylabel("y");
+    plt::zlabel("z");
 
-    singleRRT();
+    Graph* rrtTree = singleRRT();
+    //
     //manyRRT();
+    std::vector<float> x, y, z, x1,y1,z1, xob, yob, zob;
+    
+    // Adds coords to vector to plot
+    plt::hold(plt::on);
+    for (auto& node : rrtTree->getAdjList()) {
+        x.push_back(node->coord->x);
+        y.push_back(node->coord->y);
+        z.push_back(node->coord->z);
+    }
+    plt::plot3(x, y, z, "o");
+    for (auto& node : rrtTree->getPath()) {
+        x1.push_back(node->coord->x);
+        y1.push_back(node->coord->y);
+        z1.push_back(node->coord->z);
+    }
+    plt::plot3(x1, y1, z1, "-rs");
 
-	_CrtDumpMemoryLeaks();
-	return 0;
+    // Shows Obstacle same order as text file
+    xob.push_back(-10);     yob.push_back(-100);    zob.push_back(150);
+    xob.push_back(10);      yob.push_back(-100);    zob.push_back(150);
+    xob.push_back(-10);     yob.push_back(-100);    zob.push_back(0);
+    xob.push_back(10);      yob.push_back(-100);    zob.push_back(0);
+    xob.push_back(-10);     yob.push_back(100);     zob.push_back(150);
+    xob.push_back(10);      yob.push_back(100);     zob.push_back(150);
+    xob.push_back(-10);     yob.push_back(100);     zob.push_back(0);
+    xob.push_back(10);      yob.push_back(100);     zob.push_back(0);
+    plt::plot3(xob, yob, zob, "-mx");
+    
+
+    plt::show();
+    return 0;
 }

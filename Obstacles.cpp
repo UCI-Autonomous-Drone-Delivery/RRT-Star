@@ -1,5 +1,4 @@
 #include "Obstacles.hpp"
-#include "Graph.hpp"
 
 Obstacles::Obstacles(float xMin, float xMax, float yMin, float yMax, float zMin, float zMax) {
 	xMapMin = xMin;
@@ -24,7 +23,7 @@ void Obstacles::initObstacles() {
 	Coord* h = new Coord();
 
 	std::ifstream myReadFile;
-	myReadFile.open("RRT-Star/obstacles.txt");
+	myReadFile.open("obstacles.txt");
 	std::string output;
 	int lineCounter = 0;
 	float x,y,z=0;
@@ -336,10 +335,14 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 
 		//check if the obstacle is between A and B inclusive
 		Obstacle* ob = obstacleList.at(i);
-		status = checkObstacleInt(A, B, ob);
-		if (checkBox(B, ob)) {
-			return true;
-		}
+
+		// Unsure if checkObstacleInt working
+		// Shows two differetn paths
+		status = checkBox(B, ob);
+		//status = checkObstacleInt(A, B, ob);
+		//if (checkBox(B, ob)) {
+		//	return true;
+		//}
 		if (status == true) {
 			return true;
 		}

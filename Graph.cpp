@@ -1,14 +1,18 @@
 #include "Graph.hpp"
-using namespace std;
-
 // Constructor
 
+// Two Graphs
+Graph::Graph(Coord start_coord)
+{
+	this->start_node = new Node(0, start_coord);
+	adj_list.push_back(start_node);
+};
 
 // Singluar Drone
-Graph::Graph(Coord startCoord, Coord endCoord)
+Graph::Graph(Coord start_coord, Coord end_coord)
 {
-	this->start_node = new Node(0, startCoord);
-	this->end_node = new Node(NUMNODES, endCoord);
+	this->start_node = new Node(0, start_coord);
+	this->end_node = new Node(NUMNODES, end_coord);
 	adj_list.push_back(start_node);
 };
 
@@ -105,6 +109,24 @@ Node* Graph::nearestNode(Coord* random_coord)
 
 // Utility Functions
 
+//
+
+void Graph::addObstacles(Obstacles* o) 
+{
+	obs = o;
+}
+
+void Graph::connect(Node* node_src, Node* node_dest, Graph* ga) // new_node, nearest_vertex in B
+{
+
+	Coord step = stepNode(node_src->coord, node_dest->coord, STEPSIZE);
+	//Collision Check
+
+	Node* new_node = new Node(step);
+	adj_list.push_back(new_node);
+
+}
+
 // Creates a new coordinate step size away from the selected Node
 Coord Graph::stepNode(Coord* coord, Coord* random_coord, float step_size) 
 {
@@ -155,6 +177,7 @@ bool Graph::inGoalRadiusMany(Coord* node_coord, int number) {
 }
 
 void Graph::generatePathSingle(Node* final_node) {
+	//// Unoptimized
 	addToGraph(final_node, end_node);
 	path_single.push_back(end_node);
 	Node* node = final_node;
@@ -163,6 +186,31 @@ void Graph::generatePathSingle(Node* final_node) {
 		node = node->parent;
 	}
 	path_single.push_back(node);
+
+	// Optimized
+	//addToGraph(final_node, end_node);
+	//path_single.push_back(end_node);
+	//Node* node = final_node;
+	//Node* check = final_node->parent;
+	//while (node->parent) {
+	//	if (check->parent) {
+	//		if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+	//			std::cout << "Collision in checking" << std::endl;
+	//			check = check->parent;
+	//		}
+	//		else {
+	//			path_single.push_back(node);
+	//			//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+	//			node = check;
+	//			check = node->parent;
+	//		}
+	//	}
+	//	else {
+	//		path_single.push_back(node);
+	//		node = check;
+	//	}
+	//}
+	//path_single.push_back(node);
 }
 
 void Graph::generatePathMany(Node* final_node, int number) {
@@ -170,10 +218,26 @@ void Graph::generatePathMany(Node* final_node, int number) {
 	std::vector<Node*> path;
 	path.push_back(end_nodes.at(number));
 	Node* node = final_node;
+	Node* check = final_node->parent;
+
 	while (node->parent) {
-		path.push_back(node);
-		node = node->parent;
+		if (check->parent) {
+			if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+				check = check->parent;
+			}
+			else {
+				path.push_back(node);
+				//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+				node = check;
+				check = node->parent;
+			}
+		}
+		else {
+			path.push_back(node);
+			node = check;
+		}
 	}
+
 	path.push_back(node);
 
 	found_path[number] = true;
