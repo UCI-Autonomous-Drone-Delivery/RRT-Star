@@ -458,6 +458,7 @@ bool Obstacles::checkInMap(Coord* c) {
 	return true;
 }
 
+//Returns True if the point is within the bounds of the cube (there is a collision)
 bool Obstacles::pointInPlane(Coord* A, Coord* B, Plane* plane) {
 
 	std::cout << "running pointInPlane\n";
