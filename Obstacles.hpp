@@ -12,7 +12,7 @@
 #include<fstream>
 #include <string>
 
-#include "Graph.hpp"
+#include "Data.hpp"
 
 //ai + bj + ck = d
 struct Plane {

@@ -4,7 +4,6 @@
 #include "Graph.hpp"
 #include "Obstacles.hpp"
 
-
 Graph* rrtStarSingle(Coord homeCoord, Coord endCoord);
 Graph* rrtStarMany(std::vector<Coord> start_coords, std::vector<Coord> end_coords);
 

@@ -11,7 +11,6 @@
 #define DBG_NEW new
 #endif
 
-
 void manyRRT() {
     std::vector<Coord> start_coords;
     std::vector<Coord> goal_coords;
@@ -43,12 +42,12 @@ void manyRRT() {
 }
 
 void singleRRT() {
-	Coord start = Coord(-110, 130, 10);
-	Coord end = Coord(110, -130, 10);
+	Coord start = Coord(-110, -130, 10);
+	Coord end = Coord(-30, -130, 10);
 	Graph* rrtTree = rrtStarSingle(start, end);
 	if (rrtTree) {
-		rrtTree->printPathSingle();
-		rrtTree->printGraph();
+		//rrtTree->printPathSingle();
+		//rrtTree->printGraph();
 	}
 	else {
 		std::cout << "No paths found :(" << std::endl;
@@ -60,9 +59,24 @@ int main()
 {
 	//srand((unsigned)time(NULL));
 	srand(SEED);
+    Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
+    o.initObstacles();
+    Coord* start = new Coord(-110, 130, 10);
+    Coord* end = new Coord(-30, -130, 10);
+    //Coord* start = new Coord(40, 60, 60);
+    //Coord* end = new Coord(80, 60, 60);
 
-    singleRRT();
+    if (o.collisionCheck(start , end)) { // If obstacle is in between two nodes return true
+        std::cout << "collision here!\n";
+    }
+    else {
+        std::cout << "no collision here!\n";
+    }
+
+    //singleRRT();
     //manyRRT();
+
+    //droneTest();
 
 	_CrtDumpMemoryLeaks();
 	return 0;

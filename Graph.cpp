@@ -3,12 +3,18 @@ using namespace std;
 
 // Constructor
 
+// Two Graphs
+Graph::Graph(Coord start_coord)
+{
+	this->start_node = new Node(0, start_coord);
+	adj_list.push_back(start_node);
+};
 
 // Singluar Drone
-Graph::Graph(Coord startCoord, Coord endCoord)
+Graph::Graph(Coord start_coord, Coord end_coord)
 {
-	this->start_node = new Node(0, startCoord);
-	this->end_node = new Node(NUMNODES, endCoord);
+	this->start_node = new Node(0, start_coord);
+	this->end_node = new Node(NUMNODES, end_coord);
 	adj_list.push_back(start_node);
 };
 
@@ -103,7 +109,41 @@ Node* Graph::nearestNode(Coord* random_coord)
 
 }
 
-// Utility Functions
+// Utility Functions //
+
+void Graph::addObstacles(Obstacles* o) 
+{
+	obs = o;
+}
+
+void Graph::connect(Node* node_src, Node* node_dest)
+{
+	// Get path for now CHANGE LATER
+	//std::vector<Node*> drone_path;
+
+	//path_single.push_back(node);
+	Node* new_node;
+	Node* step_node;
+	new_node = node_src;
+	while (new_node != node_dest) {
+		if (findDistance(new_node->coord, node_dest->coord) < GOALRADIUS) {
+			Node* node = new_node;
+			while (node->parent) {
+				path_single.push_back(node);
+				node = node->parent;
+			}
+			addToGraph(new_node, node_dest);
+			break;
+		}
+
+		Coord step = stepNode(new_node->coord, node_dest->coord, STEPSIZE);
+		step_node = new Node(new_node->node_number+1, step);
+		addToGraph(new_node, step_node);
+		new_node = step_node;	
+	}
+
+	std::cout << "\n\nThere is a CONNECTION!\n\n" << std::endl;
+}
 
 // Creates a new coordinate step size away from the selected Node
 Coord Graph::stepNode(Coord* coord, Coord* random_coord, float step_size) 
@@ -155,12 +195,37 @@ bool Graph::inGoalRadiusMany(Coord* node_coord, int number) {
 }
 
 void Graph::generatePathSingle(Node* final_node) {
+	//// Unoptimized
+	//addToGraph(final_node, end_node);
+	//path_single.push_back(end_node);
+	//Node* node = final_node;
+	//while (node->parent) {
+	//	path_single.push_back(node);
+	//	node = node->parent;
+	//}
+	//path_single.push_back(node);
+
+	// Optimized
 	addToGraph(final_node, end_node);
 	path_single.push_back(end_node);
 	Node* node = final_node;
+	Node* check = final_node->parent;
 	while (node->parent) {
-		path_single.push_back(node);
-		node = node->parent;
+		if (check->parent) {
+			if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+				check = check->parent;
+			}
+			else {
+				path_single.push_back(node);
+				//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+				node = check;
+				check = node->parent;
+			}
+		}
+		else {
+			path_single.push_back(node);
+			node = check;
+		}
 	}
 	path_single.push_back(node);
 }
@@ -170,10 +235,26 @@ void Graph::generatePathMany(Node* final_node, int number) {
 	std::vector<Node*> path;
 	path.push_back(end_nodes.at(number));
 	Node* node = final_node;
+	Node* check = final_node->parent;
+
 	while (node->parent) {
-		path.push_back(node);
-		node = node->parent;
+		if (check->parent) {
+			if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+				check = check->parent;
+			}
+			else {
+				path.push_back(node);
+				//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+				node = check;
+				check = node->parent;
+			}
+		}
+		else {
+			path.push_back(node);
+			node = check;
+		}
 	}
+
 	path.push_back(node);
 
 	found_path[number] = true;
@@ -238,7 +319,10 @@ std::vector<Node*> Graph::getAdjList() {
 void Graph::printGraph()
 {
 	cout << "Size of Tree: " << adj_list.size() << endl;
-	//cout << "Adjacency List" << endl;
+	cout << "Adjacency List" << endl;
+	for (auto& node : adj_list) {
+		node->printNode();
+	}
 	//for (auto& node : adj_list)
 	//{
 	//	if (!node) { continue; }

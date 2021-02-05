@@ -5,17 +5,17 @@
 const int SEED = 69;
 
 // Number of drones
-const int NUMDRONES = 2;
+const int NUMDRONES = 3;
 
 //Size of search radius for nearest neighbors
-const int RADIUS = 40;
+const int RADIUS = 15;
 
 //Goal Radius
-const float GOALRADIUS = 50.f;
+const float GOALRADIUS = 40.f;
 
 //Number of Nodes to be created
 const int NUMNODES = 10000;
-const float STEPSIZE = 5; // Remember to set stepsize corresponding to how big the map is
+const float STEPSIZE = 7.5; // Remember to set stepsize corresponding to how big the map is
 
 //assume map is a cube for now, this will be changed later
 

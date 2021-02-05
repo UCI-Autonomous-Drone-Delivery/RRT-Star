@@ -24,7 +24,7 @@ void Obstacles::initObstacles() {
 	Coord* h = new Coord();
 
 	std::ifstream myReadFile;
-	myReadFile.open("RRT-Star/obstacles.txt");
+	myReadFile.open("obstacles.txt");
 	std::string output;
 	int lineCounter = 0;
 	float x,y,z=0;
