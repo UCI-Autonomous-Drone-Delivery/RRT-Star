@@ -1,213 +1,355 @@
 #include "RRTStar.hpp"
 #include "Graph.hpp"
 
+// Constructor
+BiRRTStar::BiRRTStar(Coord start_coord, Coord end_coord)
+{
+	start_node = new Node(0, start_coord);
+	end_node = new Node(1, end_coord);
+};
 
-Graph* rrtStarSingle(Coord homeCoord, Coord endCoord) {
+std::vector<Node*> BiRRTStar::CallRRTStar() {
 	//Initializes obstacles here
-
-
-	Obstacles o = Obstacles(MAPMINX,MAPMINY,MAPMINZ,MAPMAXX,MAPMAXY,MAPMAXZ);
+	Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
 	o.initObstacles();
-	//Graph* graphA = new Graph(homeCoord, endCoord);
+	addObstacles(&o);
 
-	Graph* graphA = new Graph(homeCoord);
-	graphA->addObstacles(&o);
-	Graph* graphB = new Graph(endCoord);
-	graphB->addObstacles(&o);
-	int i = 1;
+	Graph* graphA = new Graph(start_node);
+	start_node->coord->printCoord();
+	Graph* graphB = new Graph(end_node);
+	end_node->coord->printCoord();
+
+	int i = 2;
 	while (i < NUMNODES + 1) {
-
+		if (graphA->isInit()) {
+			std::cout << "Graph A! \n";
+		}
+		else {
+			std::cout << "Graph B! \n";
+		}
+		
 		Coord random_coord = Coord();	// Random Position
-		Node* nearest_node = graphA->nearestNode(&random_coord); // Nearest Node from the random point
+		Node* nearest_node = nearestNode(&random_coord, graphA); // Nearest Node from the random point
 
 		// Creating coordinate and node step size away from the nearest coord
-		Coord step = graphA->stepNode(nearest_node->coord, &random_coord, STEPSIZE);
-
-		// STILL NEED TO FINISH CHECKOBSTACLE
+		Coord step = stepNode(nearest_node->coord, &random_coord);
+		
 		if (o.collisionCheck(nearest_node->coord, &step)) { // If obstacle is in between two nodes return true
 			std::cout << "collision here!\n";
 			step.printCoord();
-			i++;
 			continue;
 		}
+		else {
+			std::cout << "No Collision\n";
+		}
 
-		if (graphA->findDistance(nearest_node->coord, &step) > graphA->findDistance(nearest_node->coord, &random_coord)) {
+		float cost = findDistance(nearest_node->coord, &step);
+		if (cost > findDistance(nearest_node->coord, &random_coord)) {
 			continue;
 		}
 
 		Node* new_node = new Node(i, step);
-		graphA->addToGraph(nearest_node, new_node);
+		graphA->addEdge(nearest_node, new_node, cost);
+
 		//if (i % 100 == 0) {
 			new_node->printNode();
 		//}
-		std::vector<Node*> neighbors = graphA->nearestNeighbors(new_node, RADIUS);
 
-		// FOR RRT*
-		for (auto& node_neighbor : neighbors) {
-			float cost_new = graphA->findDistance(new_node->coord, node_neighbor->coord);
-			if (cost_new + node_neighbor->weight < new_node->weight) {
-				if (o.collisionCheck(node_neighbor->coord, new_node->coord)) { // If obstacle is in between two nodes return true
-					std::cout << "collision here when rewiring!\n";
-					i++;
-					continue;
-				}
-				graphA->rewireEdge(
-					node_neighbor,
-					new_node,
-					cost_new
-				);
-			}
+		std::vector<Node*> neighbors = nearestNeighbors(new_node, graphA);
+		Node* bestNode = chooseBestParent(new_node, neighbors);
+		if (bestNode) {
+			graphA->rewireEdge(bestNode, new_node);
 		}
 
-		Node* nearest_vertex = graphB->nearestNode(new_node->coord); // Nearest Node from the random point
+		Node* nearest_vertex = nearestNode(new_node->coord, graphB); // Nearest Node from opposite graph
 		if (!o.collisionCheck(new_node->coord, nearest_vertex->coord)) {
-			graphA->connect(new_node, nearest_vertex);
-			graphA->printGraph();
-			graphB->printGraph();
-			return graphA;
+			connect(new_node, nearest_vertex, graphA);
+			return getPath();
 		}
-	 
+
 		std::swap(graphA, graphB);
-		
-		// Check if node found goal
-		// CHECK IF THERE IS AN OBSTACLE IN GOAL RADIUS INBETWEEN NEWPOINT AND GOAL
-	//	if (graphA->inGoalRadiusSingle(new_node->coord)) {
-	//		if (o.collisionCheck(new_node->coord, &endCoord)) { // If obstacle is in between two nodes return true
-	//			std::cout << "collision at endCoord!\n";
-	//			continue;
-	//		}
-	//		//std::cout << "Node that found Goal: " << new_node->node_number << std::endl;
-	//		graphA->generatePathSingle(new_node);
-	//		return graphA;
-	//	}
 		i++;
 	}
 	std::cout << "Goal was not found" << std::endl;
-	//delete graphA;
-	//delete graphB;
-		
-	// Return NULL if no path found
-	return graphA;
+
+	// Return empty if no path found
+	return getPath();
 }
 
-Graph* rrtStarMany(std::vector<Coord> start_coords, std::vector<Coord> end_coords) {
-
-	Coord* ful = new Coord(50, 50, 75);
-	Coord* fur = new Coord(75, 50, 75);
-	Coord* fdl = new Coord(50, 50, 50);
-	Coord* fdr = new Coord(75, 50, 50);
-	Coord* bul = new Coord(50, 75, 75);
-	Coord* bur = new Coord(75, 75, 75);
-	Coord* bdl = new Coord(50, 75, 50);
-	Coord* bdr = new Coord(75, 75, 50);
-
-	Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
-
-	// Creating the start of graph
-	Graph* graph = new Graph(start_coords, end_coords);
-
-	// Start at ith number after initializing start nodes
-	// Only create NUMNODES nodes
-	int i = int(NUMDRONES);
-	while (i < NUMNODES + NUMDRONES) {
-
-		Coord random_coord = Coord();	// Random Position
-		Node* nearest_node = graph->nearestNode(&random_coord); // Nearest Node from the random point
-		if (nearest_node->in_use) {
-			//std::cout << nearest_node->node_number << " is in Use" << std::endl;
-			continue;
-		}
-
-		// Creating coordinate and node step size away from the nearest coord
-		Coord step = graph->stepNode(nearest_node->coord, &random_coord, STEPSIZE);
-
-		//Checking if coord is in map Using obstacle checkMap() but not the function
-		if (step.x >= MAPMAXX - MINOBSTDIST || step.x < MAPMINX + MINOBSTDIST ||
-			step.y >= MAPMAXY - MINOBSTDIST || step.y < MAPMINY + MINOBSTDIST ||
-			step.z >= MAPMAXZ - MINOBSTDIST || step.z < MAPMINZ + MINOBSTDIST)
-		{
-			nearest_node->coord->printCoord();
-			step.printCoord();
-			std::cout << "Node out of bounds" << std::endl;
-			continue;
-		}
-		
-		// Random Coord is not a node but the coord that determines the direction the new node is made. Should we be checking nearest_node and the step_node????
-		if (o.collisionCheck(nearest_node->coord, &random_coord)) { // if obstacle is in between two nodes return true
-			std::cout << "collision here!\n";
-			nearest_node->printNode();
-			random_coord.printCoord();
-			continue;
-		}
-
-
-		if (graph->findDistance(nearest_node->coord, &step) > graph->findDistance(nearest_node->coord, &random_coord)) {
-			continue;
-		}
-
-		Node* new_node = new Node(i, step);
-		graph->addToGraph(nearest_node, new_node);
-		if (i % 100 == 0) {
-			new_node->printNode();
-		}
-
-		// FOR RRT*
-		std::vector<Node*> neighbors = graph->nearestNeighbors(new_node, RADIUS);
-		for (auto& node_neighbor : neighbors) {
-			if (node_neighbor->in_use) {
-				continue;
-			}
-			float cost_new = graph->findDistance(new_node->coord, node_neighbor->coord);
-			if (cost_new + node_neighbor->weight < new_node->weight) {
-				graph->rewireEdge(
-					node_neighbor,
-					new_node,
-					cost_new
-				);
-			}
-		}
-
-		// Check if node found goal
-		// IN USE NOT BEING CALLED HERE. DOUBLE CHECK IN_USE
-		for (int j = 0; j < NUMDRONES; j++) {  // PROBLEM
-			if (graph->isPathFound(j)) {
-				//std::cout << "Found Path: " << j << std::endl;
-				continue;
-			}
-			// Check if node found goal
-			if (graph->inGoalRadiusMany(new_node->coord, j)) {
-				//Check that path corresponds to correct drone
-				Node* curr = new_node->parent;
-				bool correct_drone = false;
-				while (curr) {
-					if (curr->node_number == j) {
-						correct_drone = true;
-						break;
-					}
-					curr = curr->parent;
-				}
-				if (!correct_drone) {
-					break;
-				}
-				//std::cout << "Node that found Goal: " << new_node->node_number << std::endl;
-				graph->generatePathMany(new_node, j);
-				break;
-			}	
-		}
-		if (graph->allTrue()) {
-			return graph;
-		}
-		// While i++
-		i++;
-	}
+void BiRRTStar::addObstacles(Obstacles* o) { obs = o; } 
+bool BiRRTStar::allTrue() {
 	for (int i = 0; i < NUMDRONES; i++) {
-		if (graph->isPathFound(i)) {
-			std::cout << "Goal " << i + 1 << " was found!" << std::endl;
-		}
-		else {
-			std::cout << "Goal " << i + 1 << " was not found!" << std::endl;
+		if (!found_path[i]) {
+			return false;
 		}
 	}
-	return graph;
+	return true;
+}
+
+// Creates a new coordinate step size away from the selected Node
+Coord BiRRTStar::stepNode(Coord* coord, Coord* random_coord)
+{
+	//Need to handle case when coord+step_size is greater than random point
+	float x_new, y_new, z_new, hypotonouse;
+	z_new = ((STEPSIZE)*sqrt(2.0f)) / 2.0f;
+	hypotonouse = ((STEPSIZE)*sqrt(2.0f)) / 2.0f;
+	x_new = ((hypotonouse)*sqrt(2.0f)) / 2.0f;
+	y_new = ((hypotonouse)*sqrt(2.0f)) / 2.0f;
+
+
+	// Checks if random coordinate is at a location less than the nearest coordinate
+	if (random_coord->x < coord->x) { x_new = -x_new; }
+	if (random_coord->y < coord->y) { y_new = -y_new; }
+	if (random_coord->z < coord->z) { z_new = -z_new; }
+
+	Coord newCoord = Coord(coord->x + x_new, coord->y + y_new, coord->z + z_new);
+
+	return newCoord;
+}
+
+Node* BiRRTStar::nearestNode(Coord* random_coord, Graph* graph)
+{
+
+	//NOTE: Needs to be optimized by using the nearestNeigbors function (using cells)
+	std::vector<Node*> list = graph->getAdjList();
+	Node* nearest_node = list[0];
+	for (auto& node : list) {
+		if (!node) { continue; }
+		if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, node->coord))
+		{
+			nearest_node = node;
+		}
+	}
+	return nearest_node;
 
 }
+
+std::vector<Node*> BiRRTStar::nearestNeighbors(Node* new_node, Graph* graph) {
+	std::vector<Node*> list = graph->getAdjList();
+	Coord* coord = new_node->coord;
+	std::vector<Node*> neighbors;
+	for (auto& node : list) {
+		if (!node) { continue; }
+		if (new_node->parent == node) {
+			//std::cout << "Dont need to add parent as neighbor" << endl;
+			continue;
+		}
+		if (new_node == node) {
+			//std::cout << "Cant be your own neighbor" << endl;
+			continue;
+		}
+		//if distance between node in adj_list and node param < radius
+		if (findDistance(coord, node->coord) <= RADIUS) {
+			neighbors.push_back(node);
+		}
+	}
+	//std::cout << "Neighbors are: ";
+	//for (auto& node : neighbors) {
+	//	if (!node) { continue; }
+	//	std::cout << node->node_number << " ";
+	//}
+	//std::cout << "\n\n";
+	return neighbors;
+}
+
+Node* BiRRTStar::chooseBestParent(Node* new_node, std::vector<Node*> neighbors) {
+	for (auto& node_neighbor : neighbors) {
+		float cost_new = findDistance(new_node->coord, node_neighbor->coord);
+		if (cost_new + node_neighbor->weight < new_node->weight) {
+			if (obs->collisionCheck(node_neighbor->coord, new_node->coord)) { // If obstacle is in between two nodes return true
+				std::cout << "collision here when rewiring!\n";
+				continue;
+			}
+			return node_neighbor;
+		}
+	}
+	return NULL;
+}
+
+void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
+{
+	// Get path for now CHANGE LATER
+	std::vector<Node*> part_1, part_2;
+
+	//path_single.push_back(node);
+	Node* new_node;
+	Node* step_node;
+	new_node = node_src;
+	while (new_node != node_dest) {
+		float cost = findDistance(new_node->coord, node_dest->coord);
+		if (cost < GOALRADIUS) {
+			part_1 = makePath(new_node);
+			part_2 = makePath(node_dest);
+			float total_cost = new_node->weight + node_dest->weight + cost;
+			// Debug
+			std::cout << "\nPart 1 starts at " << new_node->node_number << "\n";
+			for (auto& it : part_1) {
+				std::cout << it->node_number << " ";
+			}
+			std::cout << "\nPart 2 starts at " << node_dest->node_number << "\n";
+			for (auto& it : part_2) {
+				std::cout << it->node_number << " ";
+			}
+			// End Debug
+
+			if (graph->isInit()) {
+				std::cout << "\nGraph A found path connection! \n";
+			}
+			else {
+				std::cout << "Graph B found path connection! \n";
+			}
+
+			for (auto it = part_1.rbegin(); it != part_1.rend(); ++it) {
+				path_single.push_back(*it);
+			}
+			for (auto it = part_2.begin(); it != part_2.end(); ++it) {
+				path_single.push_back(*it);
+			}
+			
+			
+			graph->addEdge(new_node, node_dest, cost);
+			std::cout << "Total cost: " << total_cost << std::endl;
+			break;
+		}
+
+		Coord step = stepNode(new_node->coord, node_dest->coord);
+		step_node = new Node(new_node->node_number + 1, step);
+		graph->addEdge(new_node, step_node, findDistance(new_node->coord, step_node->coord));
+		new_node = step_node;
+	}
+
+	std::cout << "There is a CONNECTION!\n" << std::endl;
+}
+
+bool BiRRTStar::inGoalRadiusSingle(Coord* node_coord) {
+	if (findDistance(node_coord, end_node->coord) < GOALRADIUS) {
+		return true;
+	}
+	else
+		return false;
+}
+
+bool BiRRTStar::inGoalRadiusMany(Coord* node_coord, int number) {
+	if (findDistance(node_coord, end_nodes.at(number)->coord) < GOALRADIUS) {
+		return true;
+	}
+	else
+		return false;
+}
+
+std::vector<Node*> BiRRTStar::makePath(Node* last_node) {
+	std::vector<Node*> path;
+	Node* node = last_node;
+	while (node->parent) {
+		path.push_back(node);
+		node = node->parent;
+	}
+	path.push_back(node);
+
+	return path;
+}
+
+//void BiRRTStar::generatePathSingle(Node* final_node) {
+//	//// Unoptimized
+//	//addToGraph(final_node, end_node);
+//	//path_single.push_back(end_node);
+//	//Node* node = final_node;
+//	//while (node->parent) {
+//	//	path_single.push_back(node);
+//	//	node = node->parent;
+//	//}
+//	//path_single.push_back(node);
+//
+//	// Optimized
+//	//addToGraph(final_node, end_node);
+//	//path_single.push_back(end_node);
+//	//Node* node = final_node;
+//	//Node* check = final_node->parent;
+//	//while (node->parent) {
+//	//	if (check->parent) {
+//	//		if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+//	//			check = check->parent;
+//	//		}
+//	//		else {
+//	//			path_single.push_back(node);
+//	//			//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+//	//			node = check;
+//	//			check = node->parent;
+//	//		}
+//	//	}
+//	//	else {
+//	//		path_single.push_back(node);
+//	//		node = check;
+//	//	}
+//	//}
+//	//path_single.push_back(node);
+//}
+
+//void BiRRTStar::generatePathMany(Node* final_node, int number) {
+//	addToGraph(final_node, end_nodes.at(number));
+//	std::vector<Node*> path;
+//	path.push_back(end_nodes.at(number));
+//	Node* node = final_node;
+//	Node* check = final_node->parent;
+//
+//	while (node->parent) {
+//		if (check->parent) {
+//			if (!obs->collisionCheck(node->coord, check->parent->coord)) {
+//				check = check->parent;
+//			}
+//			else {
+//				path.push_back(node);
+//				//rewireEdge(node, check, 0); //not sure if this is correct; need to update costs and new paths found in graph
+//				node = check;
+//				check = node->parent;
+//			}
+//		}
+//		else {
+//			path.push_back(node);
+//			node = check;
+//		}
+//	}
+//
+//	path.push_back(node);
+//
+//	found_path[number] = true;
+//	path_many.at(number) = path;
+//}
+
+	/**********************************/
+	/**********************************/
+
+	// Getter Functions
+
+std::vector<Node*> BiRRTStar::getPath() {
+	return path_single;
+}
+
+bool BiRRTStar::isPathFound(int path_number) {
+	return found_path[path_number];
+}
+
+void BiRRTStar::printPathSingle() {
+	for (auto& node : path_single) {
+		std::cout << node->node_number << " ";
+	}
+	std::cout << std::endl;
+	//std::cout << "Total Cost: " << end_node->weight << std::endl;
+}
+
+//void BiRRTStar::printPathMany() {
+//	for (int i = 0; i < NUMDRONES; i++) {
+//		std::vector<Node*> path = path_many.at(i);
+//		std::cout << "Path " << i << ": ";
+//		if (path.empty()) {
+//			std::cout << "No path found :(" << std::endl;
+//			continue;
+//		}
+//		for (auto& node : path) {
+//			if (!node) { continue; }
+//			std::cout << node->node_number << " ";
+//		}
+//		std::cout << std::endl;
+//		std::cout << "Total Cost: " << end_nodes.at(i)->weight << std::endl;
+//	}
+//}

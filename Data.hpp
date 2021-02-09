@@ -3,8 +3,6 @@
 
 #include "Constants.hpp"
 
-using namespace std;
-
 struct Coord {
     float x, y, z;
 
@@ -23,8 +21,7 @@ struct Coord {
     }
 
     void printCoord() {
-        using namespace std;
-        cout << "Coord (X,Y,Z) = (" << x << "," << y << "," << z << ")\n" << endl;
+        std::cout << "Coord (X,Y,Z) = (" << x << "," << y << "," << z << ")\n" << std::endl;
     }
 };
 
@@ -92,3 +89,18 @@ struct Node {
 
 
 };
+
+static float findDistance(Coord* coord_src, Coord* coord_dest);
+
+// Finds distance between two nodes
+static float findDistance(Coord* coord_src, Coord* coord_dest)
+{
+    float dist_x = pow((coord_dest->x - coord_src->x), 2);
+    float dist_y = pow((coord_dest->y - coord_src->y), 2);
+    float dist_z = pow((coord_dest->z - coord_src->z), 2);
+
+    float total_distance = sqrt((dist_x + dist_y + dist_z));
+    /*std::cout << "dx: " << dist_x << " dy: " << dist_y << " dz: " << dist_z << std::endl;
+    std::cout << "Total Distance: " << total_distance << std::endl;*/
+    return total_distance;
+}
