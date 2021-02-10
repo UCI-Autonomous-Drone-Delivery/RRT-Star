@@ -1,3 +1,6 @@
+#ifndef DATA_HPP
+#define DATA_HPP
+
 #include <cmath>
 #include <iostream>
 
@@ -92,3 +95,5 @@ struct Node {
 
 
 };
+
+#endif

@@ -1,5 +1,8 @@
 #include "RRTStar.hpp"
 #include "Graph.hpp"
+
+#include "bPlus.hpp"
+
 // Memory Leak Check
 #include <crtdbg.h>
 
@@ -55,29 +58,46 @@ void singleRRT() {
     delete rrtTree;
 }
 
-int main()
-{
-	//srand((unsigned)time(NULL));
-	srand(SEED);
-    Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
-    o.initObstacles();
-    Coord* start = new Coord(-110, 130, 10);
-    Coord* end = new Coord(-30, -130, 10);
-    //Coord* start = new Coord(40, 60, 60);
-    //Coord* end = new Coord(80, 60, 60);
+//int main()
+//{
+//	//srand((unsigned)time(NULL));
+//	srand(SEED);
+//    Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
+//    o.initObstacles();
+//    Coord* start = new Coord(-110, 130, 10);
+//    Coord* end = new Coord(-30, -130, 10);
+//    //Coord* start = new Coord(40, 60, 60);
+//    //Coord* end = new Coord(80, 60, 60);
+//
+//    if (o.collisionCheck(start , end)) { // If obstacle is in between two nodes return true
+//        std::cout << "collision here!\n";
+//    }
+//    else {
+//        std::cout << "no collision here!\n";
+//    }
+//
+//    //singleRRT();
+//    //manyRRT();
+//
+//    //droneTest();
+//
+//	_CrtDumpMemoryLeaks();
+//	return 0;
+//}
 
-    if (o.collisionCheck(start , end)) { // If obstacle is in between two nodes return true
-        std::cout << "collision here!\n";
+int main() {
+    bPlus* b = new bPlus();
+
+    Coord coord = Coord(1, 2, 3);
+    Node* n = new Node(coord);
+    b->insert(n);
+    TreeNode* result=b->search(n);
+    if (result != NULL) {
+        std::cout << "found!!\n";
     }
     else {
-        std::cout << "no collision here!\n";
+        std::cout << "Life sucks\n";
     }
 
-    //singleRRT();
-    //manyRRT();
 
-    //droneTest();
-
-	_CrtDumpMemoryLeaks();
-	return 0;
 }
