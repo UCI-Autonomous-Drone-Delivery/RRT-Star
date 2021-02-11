@@ -19,11 +19,12 @@ struct TreeNode {
 	TreeNode* childArray[BRANCHSIZE + 1]; // holds nodes at next level
 	TreeNode* parent;
 	int size;
-	TreeNode(bool isLe, TreeNode* par) {
+	int treeID;
+	TreeNode(bool isLe, TreeNode* par, int id) {
 		isLeaf = isLe;
 		parent = par;
 		size = 0;
-
+		treeID = id;
 		//initialize arrays to be null
 		for (int i = 0; i < BRANCHSIZE; i++) {
 			key[i] = NULL;
@@ -31,6 +32,7 @@ struct TreeNode {
 		}
 		childArray[BRANCHSIZE] = NULL;
 	}
+
 };
 
 
@@ -39,14 +41,16 @@ public:
 	bPlus();
 	void insert(Node* node);
 	TreeNode* traverse(Node* node);
+	void printTree();
+	void printTreeInternal(TreeNode* cursor);
 	TreeNode* search(Node* node);
 	void insertInternal(Node* node, TreeNode* cursor, TreeNode* child);
 	TreeNode* findParent(TreeNode* cursor, TreeNode* child);
-
+	void printKeys(TreeNode* input);
 private:
 	int treeSize;
 	TreeNode* treeHead;
-
+	int treeNum;
 };
 
 

@@ -1,16 +1,23 @@
 #include "bPlus.hpp"
 
+
+
+
 bPlus::bPlus() {
 		treeSize = 0;
 		treeHead = NULL;
+		treeNum = 0;
 }
 
 void bPlus::insert(Node* node) {
 	TreeNode* root;
+
 	if (treeHead == NULL) {
-		root = new TreeNode(true,NULL);
+		root = new TreeNode(true,NULL, treeNum++);
 		root->key[0] = node;
 		root->size = 1;
+		treeSize = 1;
+		treeHead = root;
 		return;
 	}
 
@@ -39,13 +46,15 @@ void bPlus::insert(Node* node) {
 		cursor->size++;
 	}
 	else {
-		TreeNode* newTreeNode = new TreeNode(true, NULL);
+		//cout << "split insert" << endl;
+		TreeNode* newTreeNode = new TreeNode(true, NULL, treeNum++);
 		Node* tempTreeNodeKey[BRANCHSIZE + 1];
 
 
 		for (int i = 0; i < BRANCHSIZE; i++) {
 			tempTreeNodeKey[i] = cursor->key[i];
 		}
+
 		//find index in tempTreeNodeKey for our new value 
 		int i;
 		for (i = 0; i<BRANCHSIZE; i++) {
@@ -56,9 +65,10 @@ void bPlus::insert(Node* node) {
 				break;
 			}
 		}
+		cout << i << endl;
 		//shift all right of i to the right
-		for (int j = BRANCHSIZE; j >= i; j--) {
-			tempTreeNodeKey[j + 1] = tempTreeNodeKey[j];
+		for (int j = BRANCHSIZE; j > i; j--) {
+			tempTreeNodeKey[j] = tempTreeNodeKey[j - 1];
 		}
 
 		tempTreeNodeKey[i] = node;
@@ -83,7 +93,7 @@ void bPlus::insert(Node* node) {
 
 
 		if (cursor == treeHead) {
-			TreeNode* newRoot = new TreeNode(false, NULL);
+			TreeNode* newRoot = new TreeNode(false, NULL, treeNum++);
 			newRoot->key[0] = newTreeNode->key[0];
 			newRoot->childArray[0] = cursor;
 			newRoot->childArray[1] = newTreeNode;
@@ -92,10 +102,12 @@ void bPlus::insert(Node* node) {
 		}
 		else {
 			//CHECK THIS LINE IDK IF ITS RIGHT
+			//cout << " split 2 internal" << endl;
 			insertInternal(newTreeNode->key[0], cursor, newTreeNode);
 		}
 	}
 	treeSize++;
+	cout << "Root Size is: " << treeHead->size << endl;
 }
 
 
@@ -120,6 +132,30 @@ TreeNode* bPlus::traverse(Node* node) {
 	return cursor;
 }
 
+void bPlus::printTree() {
+	TreeNode* cursor = treeHead;
+	if (cursor->isLeaf == true) {
+		printKeys(cursor);
+		return;
+	}
+	for (int i = 0; i < BRANCHSIZE + 1; i++) {
+		if(cursor->childArray[i] != NULL)
+			printTreeInternal(cursor->childArray[i]);
+	}
+}
+
+void bPlus::printTreeInternal(TreeNode* cursor) {
+	if (cursor->isLeaf == false) {
+		for (int i = 0; i < BRANCHSIZE + 1; i++) {
+			if (cursor->childArray[i] != NULL)
+				printTreeInternal(cursor->childArray[i]);
+		}
+	}
+	else {
+		printKeys(cursor);
+	}
+}
+
 
 void bPlus::insertInternal(Node* node, TreeNode* cursor, TreeNode* child) {
 	if (cursor->size < BRANCHSIZE) {
@@ -133,15 +169,15 @@ void bPlus::insertInternal(Node* node, TreeNode* cursor, TreeNode* child) {
 			}
 		}
 		//shift all right of i to the right
-		for (int j = BRANCHSIZE; j >= i; j--) {
-			cursor[j + 1] = cursor[j];
+		for (int j = BRANCHSIZE; j > i; j--) {
+			cursor[j] = cursor[j - 1];
 		}
 		cursor->key[i] = node;
 		cursor->size++;
 		cursor->childArray[i + 1] = child;
 	}
 	else {
-		TreeNode* newTreeNode = new TreeNode(true, NULL);
+		TreeNode* newTreeNode = new TreeNode(true, NULL, treeNum++);
 		Node* tempTreeNodeKey[BRANCHSIZE + 1];
 		TreeNode* tempTreeNodeChild[BRANCHSIZE + 2];
 
@@ -163,16 +199,16 @@ void bPlus::insertInternal(Node* node, TreeNode* cursor, TreeNode* child) {
 			}
 		}
 		//shift all right of i to the right
-		for (int j = BRANCHSIZE; j >= i; j--) {
-			tempTreeNodeKey[j + 1] = tempTreeNodeKey[j];
+		for (int j = BRANCHSIZE; j > i; j--) {
+			tempTreeNodeKey[j] = tempTreeNodeKey[j - 1];
 		}
 
 		tempTreeNodeKey[i] = node;
 
 
 		//shift all right of i to the right
-		for (int j = BRANCHSIZE; j >= i+1; j--) {
-			tempTreeNodeKey[j + 1] = tempTreeNodeKey[j];
+		for (int j = BRANCHSIZE; j > i+1; j--) {
+			tempTreeNodeKey[j] = tempTreeNodeKey[j - 1];
 		}
 
 		tempTreeNodeChild[i + 1] = child;
@@ -203,7 +239,7 @@ void bPlus::insertInternal(Node* node, TreeNode* cursor, TreeNode* child) {
 		}
 
 		if (cursor == treeHead) {
-			TreeNode* newRoot = new TreeNode(false, NULL);
+			TreeNode* newRoot = new TreeNode(false, NULL, treeNum++);
 			newRoot->key[0] = cursor->key[0];
 			newRoot->childArray[0] = cursor;
 			newRoot->childArray[1] = newTreeNode;
@@ -244,3 +280,10 @@ TreeNode* bPlus::search(Node* node) {
 TreeNode* bPlus::findParent(TreeNode* cursor, TreeNode* child) {
 	return NULL;
 }
+
+void bPlus::printKeys(TreeNode* input) {
+	cout << "Tree Node for Branch: [" << input->treeID << "],  keys are:" << endl;
+	for (int i = 0; i < input->size; i++) {
+		input->key[i]->printNode();
+	}
+};
