@@ -48,6 +48,9 @@ const int NUMCELLSZ=2;
 const float DRONESIZE = 0.1;
 const float MINOBSTDIST = DRONESIZE * 1.5;
 
+const int BRANCHSIZE = 2;
+
+
 
 
 #endif

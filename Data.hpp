@@ -1,3 +1,6 @@
+#ifndef DATA_HPP
+#define DATA_HPP
+
 #include <cmath>
 #include <iostream>
 
@@ -90,6 +93,7 @@ struct Node {
 
 };
 
+
 static float findDistance(Coord* coord_src, Coord* coord_dest);
 
 // Finds distance between two nodes
@@ -104,3 +108,6 @@ static float findDistance(Coord* coord_src, Coord* coord_dest)
     std::cout << "Total Distance: " << total_distance << std::endl;*/
     return total_distance;
 }
+
+#endif
+
