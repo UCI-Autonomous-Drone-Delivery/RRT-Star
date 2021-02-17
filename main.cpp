@@ -1,7 +1,6 @@
 #include "RRTStar.hpp"
 #include "Graph.hpp"
 
-#include "bPlus.hpp"
 
 // Memory Leak Check
 #include <crtdbg.h>
@@ -47,9 +46,10 @@
 void singleRRT() {
     Coord start = Coord(-110, 130, 10);
     Coord end = Coord(110, -130, 10);
+    //
     BiRRTStar brrt = BiRRTStar(start, end);
     std::vector<Node*> path = brrt.CallRRTStar();
-
+    
     for (auto& it : path) {
         std::cout << it->node_number << " ";
     }
