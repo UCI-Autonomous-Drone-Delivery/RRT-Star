@@ -12,6 +12,12 @@ Graph::Graph(Node* start_node)
 	} else { 
 		init = false;
 	}
+
+	firstNode = start_node;
+
+	nodeHash = new hashTable();
+	nodeHash->insert(start_node);
+
 	adj_list.push_back(start_node);
 };
 
@@ -28,6 +34,9 @@ void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 	float total_weight = weight + node_src->weight;
 	node_dest->weight = total_weight;
 	node_dest->parent = node_src;
+	nodeHash->insert(node_dest);
+	
+	//delete this after hash is complete
 	adj_list.push_back(node_dest);
 }
 
@@ -53,6 +62,10 @@ void Graph::rewireEdge(Node* node_src, Node* node_dest) {
 //}
 
 
+hashTable* Graph::getHashTable() {
+	return nodeHash;
+}
+
 int Graph::getNumNodes() {
 	return num_nodes;
 }
@@ -61,8 +74,12 @@ bool Graph::isInit() {
 	return init;
 }
 
-std::vector<Node*> Graph::getAdjList() {
-	return adj_list;
+//std::vector<Node*> Graph::getAdjList() {
+//	return adj_list;
+//}
+
+Node* Graph::getFirstNode() {
+	return firstNode;
 }
 
 // Debug Functions

@@ -41,6 +41,7 @@ public:
 
     // Returns vector of nodes closest to node in radius r
     std::vector<Node*> nearestNeighbors(Node* new_node, Graph* graph);
+    Node* nearestNode(Coord* random_coord, hashTable* hash, int& lowerIndexHighBound, int& upperIndexLowBound, Node* nearest_node, std::vector<Node*>* table, int& lowerIndexLowBound, int& upperIndexHighBound, float offset);
 
     // Choose best parent with least cost from neighbors
     Node* chooseBestParent(Node* new_node, std::vector<Node*> neighbors);

@@ -27,13 +27,13 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 		else {
 			std::cout << "Graph B! \n";
 		}
-		
+
 		Coord random_coord = Coord();	// Random Position
 		Node* nearest_node = nearestNode(&random_coord, graphA); // Nearest Node from the random point
 
 		// Creating coordinate and node step size away from the nearest coord
 		Coord step = stepNode(nearest_node->coord, &random_coord);
-		
+
 		if (o.collisionCheck(nearest_node->coord, &step)) { // If obstacle is in between two nodes return true
 			std::cout << "collision here!\n";
 			step.printCoord();
@@ -52,7 +52,7 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 		graphA->addEdge(nearest_node, new_node, cost);
 
 		//if (i % 100 == 0) {
-			new_node->printNode();
+		new_node->printNode();
 		//}
 
 		std::vector<Node*> neighbors = nearestNeighbors(new_node, graphA);
@@ -76,7 +76,7 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 	return getPath();
 }
 
-void BiRRTStar::addObstacles(Obstacles* o) { obs = o; } 
+void BiRRTStar::addObstacles(Obstacles* o) { obs = o; }
 bool BiRRTStar::allTrue() {
 	for (int i = 0; i < NUMDRONES; i++) {
 		if (!found_path[i]) {
@@ -110,45 +110,215 @@ Coord BiRRTStar::stepNode(Coord* coord, Coord* random_coord)
 Node* BiRRTStar::nearestNode(Coord* random_coord, Graph* graph)
 {
 
-	//NOTE: Needs to be optimized by using the nearestNeigbors function (using cells)
-	std::vector<Node*> list = graph->getAdjList();
-	Node* nearest_node = list[0];
-	for (auto& node : list) {
-		if (!node) { continue; }
-		if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, node->coord))
-		{
-			nearest_node = node;
+	hashTable* hash = graph->getHashTable();
+	int loc = hash->search(random_coord);
+	/* Uncomment this section for recursive node search. Still not optimized, not sure if it can be optimized further*/
+	//int lowerIndex = loc - ((float)RADIUS / (float)hash->getBucketRange());
+	//int upperIndex = loc + ((float)RADIUS / (float)hash->getBucketRange()) + 1;
+
+	//if (upperIndex >= hash->getNumBuckets()) {
+	//	upperIndex = hash->getNumBuckets();
+	//}
+	//if (lowerIndex < 0) {
+	//	lowerIndex = 0;
+	//}
+	//std::cout << "Lowerindex = " << lowerIndex << "\tHigh Index = " << upperIndex << "\tx coord = " << random_coord->x << std::endl;
+
+	/*END SECTION*/
+
+	std::vector<Node*>* table = hash->getTable();
+	Node* nearest_node = graph->getFirstNode();
+
+	/* Uncomment this section for naive node search. Fastest run time*/
+
+	int lowerIndex = 0;
+	int upperIndex = NUMNODES;
+
+	/*END SECTION*/
+	for (int i = lowerIndex; i < upperIndex; i++) {
+		for (int j = 0; j < table[i].size(); j++) {
+			if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, table[i].at(j)->coord))
+			{
+				if (findDistance(random_coord, table[i].at(j)->coord) != 0) {
+					nearest_node = table[i].at(j);
+				}
+			}
 		}
 	}
-	return nearest_node;
 
+
+	if (!hash->inBucket(nearest_node, lowerIndex, upperIndex)) {
+		/*	return nearestNode(random_coord, graph, 1, lowerIndex, upperIndex);*/
+		//std::cout << "HELLO RECURSION" << std::endl;
+		float offset = 100;
+		int lowerIndexLowBound = loc - (((float)RADIUS + offset) / (float)hash->getBucketRange());
+		int upperIndexHighBound = loc + (((float)RADIUS + offset) / (float)hash->getBucketRange()) + 1;
+
+		int& LILB = lowerIndexLowBound;
+		int& UIHB = upperIndexHighBound;
+
+		int& LIHB = lowerIndex;
+		int& UILB = upperIndex;
+
+		return nearestNode(random_coord, hash, LIHB, UILB, nearest_node, table, LILB, UIHB, offset);
+
+	}
+
+	return nearest_node;
+}
+
+Node* BiRRTStar::nearestNode(Coord* random_coord, hashTable* hash, int& lowerIndexHighBound, int& upperIndexLowBound, Node* nearest_node, std::vector<Node*>* table, int& lowerIndexLowBound, int& upperIndexHighBound, float offset) {
+
+	//std::cout << "HELLO RECURSION1" << std::endl;
+	//std::cout << "HELLO RECURSION2" << std::endl;
+
+	if (upperIndexHighBound >= hash->getNumBuckets()) {
+		upperIndexHighBound = hash->getNumBuckets();
+	}
+	if (lowerIndexLowBound <= 0) {
+		lowerIndexLowBound = 0;
+	}
+	//std::cout << "Lowerindex = " << lowerIndex << "\tHigh Index = " << upperIndex << "\tx coord = " << random_coord->x << std::endl;
+
+	//lowerIndex = 0;
+	//upperIndex = NUMNODES - 1;
+
+
+	//for (int i = lowerIndex; i < upperIndex; i++) {
+	//	///std::cout << "HELLO RECURSION3 = " << i << std::endl;
+
+	//	for (int j = 0; j < table[i].size(); j++) {
+	//		if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, table[i].at(j)->coord))
+	//		{
+	//			if (findDistance(random_coord, table[i].at(j)->coord) != 0) {
+	//			///	std::cout << "HELLO RECURSION4" << std::endl;
+	//				nearest_node = table[i].at(j);
+	//			}
+	//		}
+	//	}
+	//}
+
+	int i = 0;
+	while (i < offset) {
+		if (lowerIndexLowBound < (lowerIndexHighBound - i)) {
+			for (int j = 0; j < table[lowerIndexHighBound - i].size(); j++) {
+				if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, table[lowerIndexHighBound - i].at(j)->coord))
+				{
+					if (findDistance(random_coord, table[lowerIndexHighBound - i].at(j)->coord) != 0) {
+						nearest_node = table[lowerIndexHighBound - i].at(j);
+					}
+
+				}
+			}
+		}
+
+		if ((upperIndexLowBound + i) < upperIndexHighBound) {
+			for (int j = 0; j < table[upperIndexLowBound + i].size(); j++) {
+				if (findDistance(random_coord, nearest_node->coord) > findDistance(random_coord, table[upperIndexLowBound + i].at(j)->coord))
+				{
+					if (findDistance(random_coord, table[upperIndexLowBound + i].at(j)->coord) != 0) {
+						nearest_node = table[upperIndexLowBound + i].at(j);
+					}
+
+				}
+			}
+		}
+		i++;
+	}
+
+	if (!hash->inBucket(nearest_node, lowerIndexLowBound, upperIndexHighBound)) {
+		/* Bound variables now switch here. lowerIndexHighBound will become the new low bound. Same for upperIndex	*/
+		//std::cout << "HELLO RECURSION 2" << std::endl;
+		//std::cout << "Lowerindex = " << lowerIndexLowBound << "\tHigh Index = " << upperIndexHighBound << "\tx coord = " << nearest_node->coord->x << std::endl;
+		float diff;
+		if (lowerIndexHighBound - lowerIndexLowBound >= upperIndexHighBound - upperIndexLowBound) {
+			diff = lowerIndexHighBound - lowerIndexLowBound;
+
+		}
+		else {
+			diff = upperIndexHighBound - upperIndexLowBound;
+
+		}
+		lowerIndexHighBound = lowerIndexLowBound - diff;
+		//std::cout << "Diff = " << diff << std::endl;
+		upperIndexLowBound = upperIndexHighBound + diff;
+		//std::cout << "Lowerindex HIGH = " << lowerIndexHighBound << "\tHigh Index LOW = " << upperIndexLowBound << "\tx coord = " << nearest_node->coord->x << std::endl;
+
+		if (upperIndexLowBound >= hash->getNumBuckets()) {
+			upperIndexLowBound = hash->getNumBuckets();
+		}
+
+		if (lowerIndexHighBound < 0) {
+			lowerIndexHighBound = 0;
+		}
+
+		return nearestNode(random_coord, hash, lowerIndexLowBound, upperIndexHighBound, nearest_node, table, lowerIndexHighBound, upperIndexLowBound, diff);
+	}
+
+	return nearest_node;
 }
 
 std::vector<Node*> BiRRTStar::nearestNeighbors(Node* new_node, Graph* graph) {
-	std::vector<Node*> list = graph->getAdjList();
-	Coord* coord = new_node->coord;
+
+	hashTable* hash = graph->getHashTable();
 	std::vector<Node*> neighbors;
-	for (auto& node : list) {
-		if (!node) { continue; }
-		if (new_node->parent == node) {
-			//std::cout << "Dont need to add parent as neighbor" << endl;
-			continue;
-		}
-		if (new_node == node) {
-			//std::cout << "Cant be your own neighbor" << endl;
-			continue;
-		}
-		//if distance between node in adj_list and node param < radius
-		if (findDistance(coord, node->coord) <= RADIUS) {
-			neighbors.push_back(node);
+
+
+	int loc = hash->search(new_node->coord);
+	int lowerIndex = loc - ((float)RADIUS / (float)hash->getBucketRange());
+	int upperIndex = loc + ((float)RADIUS / (float)hash->getBucketRange()) + 1;
+
+	std::cout << "lower:" << lowerIndex << ", upper: " << upperIndex << "\n";
+
+	if (upperIndex >= hash->getNumBuckets()) {
+		upperIndex = hash->getNumBuckets();
+	}
+	if (lowerIndex < 0) {
+		lowerIndex = 0;
+	}
+
+	std::vector<Node*>* table = hash->getTable();
+
+	for (int i = lowerIndex; i < upperIndex; i++) {
+		for (int j = 0; j < table[i].size(); j++) {
+
+			if (new_node->parent == table[i].at(j)) {
+				//std::cout << "Dont need to add parent as neighbor" << endl;
+				continue;
+			}
+			if (new_node == table[i].at(j)) {
+				//std::cout << "Cant be your own neighbor" << endl;
+				continue;
+			}
+			//if distance between node in adj_list and node param < radius
+			if (findDistance(new_node->coord, table[i].at(j)->coord) <= RADIUS) {
+				neighbors.push_back(table[i].at(j));
+
+			}
 		}
 	}
-	//std::cout << "Neighbors are: ";
-	//for (auto& node : neighbors) {
+
+
+	//
+	//std::vector<Node*> list = graph->getAdjList();
+	//Coord* coord = new_node->coord;
+	//std::vector<Node*> neighbors;
+	//for (auto& node : list) {
 	//	if (!node) { continue; }
-	//	std::cout << node->node_number << " ";
+	//	if (new_node->parent == node) {
+	//		//std::cout << "Dont need to add parent as neighbor" << endl;
+	//		continue;
+	//	}
+	//	if (new_node == node) {
+	//		//std::cout << "Cant be your own neighbor" << endl;
+	//		continue;
+	//	}
+	//	//if distance between node in adj_list and node param < radius
+	//	if (findDistance(coord, node->coord) <= RADIUS) {
+	//		neighbors.push_back(node);
+	//	}
 	//}
-	//std::cout << "\n\n";
+
 	return neighbors;
 }
 
@@ -205,8 +375,8 @@ void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
 			for (auto it = part_2.begin(); it != part_2.end(); ++it) {
 				path_single.push_back(*it);
 			}
-			
-			
+
+
 			graph->addEdge(new_node, node_dest, cost);
 			std::cout << "Total cost: " << total_cost << std::endl;
 			break;

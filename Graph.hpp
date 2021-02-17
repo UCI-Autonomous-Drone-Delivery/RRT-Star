@@ -12,7 +12,7 @@
 
 #include "Constants.hpp"
 #include "Obstacles.hpp"
-
+#include "hash.hpp"
 class Graph {   
     int num_nodes; 
 
@@ -21,6 +21,9 @@ class Graph {
     bool init;
     std::vector<Node*> adj_list;
 
+    hashTable* nodeHash;
+
+    Node* firstNode;
     // For if we return to cells
     //std::vector <Node*> cells[NUMCELLSX][NUMCELLSY][NUMCELLSZ];
 public:
@@ -41,9 +44,10 @@ public:
     // Getter Functions
     
     int getNumNodes();
+    hashTable* getHashTable();
     bool isInit();
-    std::vector<Node*> getAdjList();
-
+    //std::vector<Node*> getAdjList();
+    Node* getFirstNode();
     //Coord* getCellCoords(Node* node);
 
     /**********************************/

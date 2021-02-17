@@ -99,6 +99,7 @@ static float findDistance(Coord* coord_src, Coord* coord_dest);
 // Finds distance between two nodes
 static float findDistance(Coord* coord_src, Coord* coord_dest)
 {
+
     float dist_x = pow((coord_dest->x - coord_src->x), 2);
     float dist_y = pow((coord_dest->y - coord_src->y), 2);
     float dist_z = pow((coord_dest->z - coord_src->z), 2);
