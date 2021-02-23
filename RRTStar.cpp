@@ -8,7 +8,7 @@ BiRRTStar::BiRRTStar(Coord start_coord, Coord end_coord)
 	end_node = new Node(1, end_coord);
 };
 
-std::vector<Node*> BiRRTStar::CallRRTStar() {
+void BiRRTStar::CallRRTStar() {
 	//Initializes obstacles here
 	Obstacles o = Obstacles(MAPMINX, MAPMINY, MAPMINZ, MAPMAXX, MAPMAXY, MAPMAXZ);
 	o.initObstacles();
@@ -21,12 +21,12 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 
 	int i = 2;
 	while (i < NUMNODES + 1) {
-		if (graphA->isInit()) {
-			std::cout << "Graph A! \n";
-		}
-		else {
-			std::cout << "Graph B! \n";
-		}
+		//if (graphA->isInit()) {
+		//	std::cout << "Graph A! \n";
+		//}
+		//else {
+		//	std::cout << "Graph B! \n";
+		//}
 
 		Coord random_coord = Coord();	// Random Position
 		Node* nearest_node = nearestNode(&random_coord, graphA); // Nearest Node from the random point
@@ -35,12 +35,9 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 		Coord step = stepNode(nearest_node->coord, &random_coord);
 
 		if (o.collisionCheck(nearest_node->coord, &step)) { // If obstacle is in between two nodes return true
-			std::cout << "collision here!\n";
-			step.printCoord();
+			//std::cout << "collision here!\n";
+			//step.printCoord();
 			continue;
-		}
-		else {
-			std::cout << "No Collision\n";
 		}
 
 		float cost = findDistance(nearest_node->coord, &step);
@@ -52,7 +49,7 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 		graphA->addEdge(nearest_node, new_node, cost);
 
 		//if (i % 100 == 0) {
-		new_node->printNode();
+		//new_node->printNode();
 		//}
 
 		std::vector<Node*> neighbors = nearestNeighbors(new_node, graphA);
@@ -64,7 +61,7 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 		Node* nearest_vertex = nearestNode(new_node->coord, graphB); // Nearest Node from opposite graph
 		if (!o.collisionCheck(new_node->coord, nearest_vertex->coord)) {
 			connect(new_node, nearest_vertex, graphA);
-			return getPath();
+			return;
 		}
 
 		std::swap(graphA, graphB);
@@ -73,7 +70,7 @@ std::vector<Node*> BiRRTStar::CallRRTStar() {
 	std::cout << "Goal was not found" << std::endl;
 
 	// Return empty if no path found
-	return getPath();
+	return;
 }
 
 void BiRRTStar::addObstacles(Obstacles* o) { obs = o; }
@@ -103,6 +100,17 @@ Coord BiRRTStar::stepNode(Coord* coord, Coord* random_coord)
 	if (random_coord->z < coord->z) { z_new = -z_new; }
 
 	Coord newCoord = Coord(coord->x + x_new, coord->y + y_new, coord->z + z_new);
+
+	return newCoord;
+}
+
+Coord BiRRTStar::extend(Coord* point, Coord* vector_dir, int t)
+{
+	float x = point->x + (t * STEPSIZE) * vector_dir->x;
+	float y = point->y + (t * STEPSIZE) * vector_dir->y;
+	float z = point->z + (t * STEPSIZE) * vector_dir->z;
+
+	Coord newCoord = Coord(x, y, z);
 
 	return newCoord;
 }
@@ -342,6 +350,17 @@ void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
 	std::vector<Node*> part_1, part_2;
 
 	//path_single.push_back(node);
+
+	// Direction Vector
+	float x = node_dest->coord->x - node_src->coord->x;
+	float y = node_dest->coord->y - node_src->coord->y;
+	float z = node_dest->coord->z - node_src->coord->z;
+
+	float unit_vector = sqrt(x * x + y * y + z * z);
+
+	Coord vector_dir = Coord(x / unit_vector, y / unit_vector, z / unit_vector);
+	int t = 1;
+
 	Node* new_node;
 	Node* step_node;
 	new_node = node_src;
@@ -352,44 +371,49 @@ void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
 			part_2 = makePath(node_dest);
 			float total_cost = new_node->weight + node_dest->weight + cost;
 			// Debug
-			std::cout << "\nPart 1 starts at " << new_node->node_number << "\n";
-			for (auto& it : part_1) {
-				std::cout << it->node_number << " ";
-			}
-			std::cout << "\nPart 2 starts at " << node_dest->node_number << "\n";
-			for (auto& it : part_2) {
-				std::cout << it->node_number << " ";
-			}
+			//std::cout << "\nPart 1 starts at " << new_node->node_number << "\n";
+			//for (auto& it : part_1) {
+			//	std::cout << it->node_number << " ";
+			//}
+			//std::cout << "\nPart 2 starts at " << node_dest->node_number << "\n";
+			//for (auto& it : part_2) {
+			//	std::cout << it->node_number << " ";
+			//}
 			// End Debug
 
 			if (graph->isInit()) {
 				std::cout << "\nGraph A found path connection! \n";
+				for (auto it = part_1.rbegin(); it != part_1.rend(); ++it) {
+					path_single.push_back(*it);
+				}
+				for (auto it = part_2.begin(); it != part_2.end(); ++it) {
+					path_single.push_back(*it);
+				}
 			}
 			else {
 				std::cout << "Graph B found path connection! \n";
+				for (auto it = part_2.rbegin(); it != part_2.rend(); ++it) {
+					path_single.push_back(*it);
+				}
+				for (auto it = part_1.begin(); it != part_1.end(); ++it) {
+					path_single.push_back(*it);
+				}
 			}
-
-			for (auto it = part_1.rbegin(); it != part_1.rend(); ++it) {
-				path_single.push_back(*it);
-			}
-			for (auto it = part_2.begin(); it != part_2.end(); ++it) {
-				path_single.push_back(*it);
-			}
-
-
 			graph->addEdge(new_node, node_dest, cost);
 			std::cout << "Total cost: " << total_cost << std::endl;
 			break;
 		}
 
-		Coord step = stepNode(new_node->coord, node_dest->coord);
+		Coord step = extend(node_src->coord, &vector_dir, t);
 		step_node = new Node(new_node->node_number + 1, step);
 		graph->addEdge(new_node, step_node, findDistance(new_node->coord, step_node->coord));
 		new_node = step_node;
+		t++;
 	}
 
 	std::cout << "There is a CONNECTION!\n" << std::endl;
 }
+
 
 bool BiRRTStar::inGoalRadiusSingle(Coord* node_coord) {
 	if (findDistance(node_coord, end_node->coord) < GOALRADIUS) {

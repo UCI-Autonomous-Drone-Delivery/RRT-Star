@@ -23,7 +23,7 @@ class BiRRTStar {
 public:
     BiRRTStar(Coord start_coord, Coord end_coord);
 
-    std::vector<Node*> CallRRTStar();
+    void CallRRTStar();
 
     /* Utility Functions */
 
@@ -35,6 +35,9 @@ public:
 
     // Returns Coord stepsize away from nearest_node coord
     Coord stepNode(Coord* coord, Coord* random_coord);
+
+    // Extends to targeted coordinate
+    Coord extend(Coord* coord, Coord* random_coord, int t);
 
     // Finds node closest to the coord
     Node* nearestNode(Coord* random_coord, Graph* graph);
