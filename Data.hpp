@@ -32,6 +32,7 @@ struct Coord {
 struct Node {
     int node_number;
     float weight;
+    float segment;
     bool visited;
     bool in_use;
 
@@ -55,6 +56,7 @@ struct Node {
     {
         node_number = 0;
         weight = 0;
+        segment = 0;
         coord = new Coord(new_coord.x, new_coord.y, new_coord.z);
         visited = false;
         in_use = false;

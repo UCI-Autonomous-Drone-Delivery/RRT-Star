@@ -32,6 +32,7 @@ Graph::~Graph() {
 void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 {
 	float total_weight = weight + node_src->weight;
+	node_dest->segment = findDistance(node_src->coord, node_dest->coord);
 	node_dest->weight = total_weight;
 	node_dest->parent = node_src;
 	nodeHash->insert(node_dest);
@@ -43,6 +44,7 @@ void Graph::addEdge(Node* node_src, Node* node_dest, float weight)
 void Graph::rewireEdge(Node* node_src, Node* node_dest) {
 	float total_weight = findDistance(node_src->coord, node_dest->coord) + node_src->weight;
 	node_dest->weight = total_weight;
+	node_dest->segment = findDistance(node_src->coord, node_dest->coord);
 	node_dest->parent = node_src;
 }
 

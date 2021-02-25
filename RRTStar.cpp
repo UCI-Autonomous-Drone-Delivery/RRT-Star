@@ -350,23 +350,30 @@ void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
 		if (cost < GOALRADIUS) {
 			part_1 = makePath(new_node);
 			part_2 = makePath(node_dest);
-			
-			//cost = 0;
-			//for (auto& it : part_1) {
-			//	if (it->parent) {
-			//		cost += findDistance(it->coord, it->parent->coord);
-			//		it->printNode();
-			//		std::cout << "Part 1: \t" << cost << std::endl;
-			//	}
-			//}
-			//for (auto& it : part_2) {
-			//	if (it->parent) {
-			//		cost += findDistance(it->coord, it->parent->coord);
-			//		it->printNode();
-			//		std::cout << "Part 2: \t" << cost << std::endl;
-			//	}
-			//}
-			float total_cost = new_node->weight + node_dest->weight + cost;
+
+			cost = 0;
+			for (int i = 0; i < part_1.size() - 1; i++) {
+				graph->rewireEdge(part_1.at(i), part_1.at(i + 1));
+			}
+			for (int i = 0; i < part_2.size() - 1; i++) {
+				graph->rewireEdge(part_2.at(i), part_2.at(i + 1));
+			}
+
+			for (auto& it : part_1) {
+				if (it->parent) {
+					cost += it->segment;
+				}
+			}
+			for (auto& it : part_2) {
+				if (it->parent) {
+					cost += it->segment;
+				}
+			}
+
+			cost += findDistance(new_node->coord, node_dest->coord);
+
+			float total_cost = cost;
+
 			// Debug
 			std::cout << "\nPart 1 starts at " << new_node->node_number << "\n";
 			for (auto& it : part_1) {
@@ -391,6 +398,7 @@ void BiRRTStar::connect(Node* node_src, Node* node_dest, Graph* graph)
 			for (auto it = part_2.begin(); it != part_2.end(); ++it) {
 				path_single.push_back(*it);
 			}
+			cost = findDistance(new_node->coord, node_dest->coord);
 
 
 			graph->addEdge(new_node, node_dest, cost);
