@@ -45,6 +45,7 @@ struct Node {
         node_number = 0;
         coord = new Coord();
         weight = 0; // Temp value
+        segment = 0;
         visited = false;
         in_use = false;
         parent = NULL;
@@ -68,6 +69,7 @@ struct Node {
     Node(int node_num, Coord new_coord)
     {
         node_number = node_num;
+        segment = 0;
         weight = 0;
         coord = new Coord(new_coord.x, new_coord.y, new_coord.z);
         visited = false;
