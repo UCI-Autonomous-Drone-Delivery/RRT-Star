@@ -83,20 +83,15 @@ struct Node {
     {
         delete coord;
         //delete cell_coord;
-        parent = NULL;
     }
 
     void printNode() {
-        using namespace std;
-        cout << "Node: " << node_number << endl;
-        cout << "Coord(X,Y,Z) = (" << coord->x << "," << coord->y << "," << coord->z << ")\n\n";
+        std::cout << "Node: " << node_number << std::endl;
+        std::cout << "Coord(X,Y,Z) = (" << coord->x << "," << coord->y << "," << coord->z << ")\n\n";
         //if(cell_coord != NULL)
             //cout << "Cell (X,Y,Z) = (" << cell_coord->x << "," << cell_coord->y << "," << cell_coord->z << ")\n" << endl;
     }
-
-
 };
-
 
 static float findDistance(Coord* coord_src, Coord* coord_dest);
 

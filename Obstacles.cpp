@@ -61,7 +61,7 @@ void Obstacles::initObstacles() {
 			//skip/print obstacle titles
 			if (lineNum == 0) {
 				lineCounter++;
-				//std::cout << "adding the obstacle:" << output << "\n";
+				std::cout << "adding the obstacle:" << output << "\n";
 
 				continue;
 			}
@@ -323,7 +323,7 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 	status = checkInMap(A);
 	if (status == false) {
 		//std::cout << "below is A\n";
-		A->printCoord();
+		//A->printCoord();
 		//std::cout << "not in map\n";
 		return true;
 	}
@@ -331,7 +331,7 @@ bool Obstacles::collisionCheck(Coord* A, Coord* B) {
 	status = checkInMap(B);
 	if (status == false) {
 		//std::cout << "below is B\n";
-		B->printCoord();
+		//B->printCoord();
 		//std::cout << "not in map\n";
 		return true;
 	}
@@ -366,7 +366,7 @@ bool Obstacles::checkBox(Coord* node_to_check, Obstacle* ob) {
 		ob->fdl->y <= node_to_check->y && node_to_check->y <= ob->bur->y &&
 		ob->fdl->z <= node_to_check->z && node_to_check->z <= ob->bur->z) {
 		//std::cout << "Node is in box " << std::endl;
-		node_to_check->printCoord();
+		//node_to_check->printCoord();
 		return true;
 	}
 	else { return false; }

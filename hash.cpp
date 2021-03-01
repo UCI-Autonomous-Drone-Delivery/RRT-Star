@@ -6,7 +6,7 @@ hashTable::hashTable() {
 	table = new std::vector<Node*>[numBuckets];
 	
 
-	std::cout << "bucketRange is: " << bucketRange << ", numBuckets is: " << numBuckets << ", MAPSIZE X is: " << MAPSIZEX <<"\n";
+	//std::cout << "bucketRange is: " << bucketRange << ", numBuckets is: " << numBuckets << ", MAPSIZE X is: " << MAPSIZEX <<"\n";
 
 }
 
